@@ -1,0 +1,26 @@
+; Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
+bits 16
+
+section .text
+
+; _kernel C symbol has to be declared as coming from another object file.
+extern _kernel
+
+; _start is the begining of the ROM, it has to be declared in a special way
+; to ensure the linker sees it.
+global _start
+..start:
+    ; Set the stack segment and pointer at the end of the RAM.
+    mov ax, 0x7000   ; Stack segment: 512K - 64K, last segment of RAM.
+    mov ss, ax
+    mov ax, 0xffff   ; Stack: last address of a the last segment.
+    mov sp, ax
+    mov ax, 0x0      ; Data: first memory segment.
+    mov ds, ax
+    mov es, ax
+    ; Call the C space
+    call _kernel
+    ; Should never be reached, but in case hang forever.
+    cli
+    hlt
