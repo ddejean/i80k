@@ -2,6 +2,7 @@
 
 SOURCES := \
 	crt0.S \
+	cpu.c \
 	kernel.c
 
 OUT := out
