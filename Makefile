@@ -3,6 +3,7 @@
 SOURCES := \
 	crt0.S \
 	cpu.c \
+	interrupts.c \
 	kernel.c
 
 OUT := out
