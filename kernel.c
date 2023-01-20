@@ -33,7 +33,8 @@ void kernel(uint16_t cs) {
     while (1) {
         hlt();
         for (i = 0; i < 255; i++) {
-            for (j = 0; j < 255; j++);
+            for (j = 0; j < 255; j++)
+                ;
         }
         outb(PORT_DEBUG, 0);
     }

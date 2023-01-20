@@ -20,4 +20,4 @@ void sti(void);
 // hlt pauses the processor until an interruption.
 void hlt(void);
 
-#endif // _CPU_H_
+#endif  // _CPU_H_

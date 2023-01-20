@@ -5,6 +5,6 @@
 
 #include "stdint.h"
 
-extern void * kmemset(void *dst, int value, size_t count);
+extern void *kmemset(void *dst, int value, size_t count);
 
-#endif // _MEM_H_
+#endif  // _MEM_H_

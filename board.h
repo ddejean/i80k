@@ -6,10 +6,10 @@
 #define _BOARD_H_
 
 // IRQ offset in the interrupt descriptor table.
-#define IDT_IRQ_OFFSET  32
+#define IDT_IRQ_OFFSET 32
 
 // IO ports
-#define PORT_PIC    0x0
-#define PORT_DEBUG  0x2000
+#define PORT_PIC 0x0
+#define PORT_DEBUG 0x2000
 
-#endif // _BOARD_H_
+#endif  // _BOARD_H_
