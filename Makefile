@@ -2,6 +2,7 @@
 
 SOURCES := \
 	crt0.S \
+	int.S \
 	cpu.c \
 	interrupts.c \
 	kernel.c

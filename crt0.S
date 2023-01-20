@@ -20,7 +20,15 @@ global _start
     mov ds, ax
     mov es, ax
     ; Call the C space
+    push cs          ; Provide the code segment to the C world.
     call _kernel
+    add sp, 0x2
     ; Should never be reached, but in case hang forever.
     cli
     hlt
+
+section .bss
+
+; Reserve 256 entries of 4 bytes for the Interrupt Descriptor Table.
+global _idt
+_idt: resb 1024
