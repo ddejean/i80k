@@ -1,6 +1,8 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 #include "board.h"
+#include "cpu.h"
+#include "firmware.h"
 #include "interrupts.h"
 
 extern void irq0(void);
@@ -21,7 +23,12 @@ void handler_irq1() {
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(uint16_t cs) {
-    int8_t i, j;
+    uint8_t i, j;
+
+    // Prepare .data and .bss sections to ensure data are correctly located and
+    // initialized.
+    firmware_data_setup();
+    firmware_bss_setup();
 
     interrupts_setup(cs);
     interrupts_handle(INT_IRQ0, irq0);

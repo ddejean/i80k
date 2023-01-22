@@ -6,6 +6,7 @@ SOURCES := \
 	mem.S \
 	cpu.c \
 	interrupts.c \
+	firmware.c \
 	kernel.c
 
 OUT := out
@@ -30,7 +31,7 @@ $(OUT)/%.o: %.c | $(OUT)
 	bcc -0 -ansi -o $@ -c $^
 
 $(KERNEL_BIN): $(OBJECTS)
-	ld86 -d -i -T 0x8000 -D 0 -m -M -o $@ $^
+	ld86 -d -i -T 0x8000 -D 0x400 -m -M -o $@ $^
 
 $(BOOTSTRAP_BIN): bootstrap.S
 	nasm -f bin -o $@ $^

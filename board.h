@@ -5,6 +5,10 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+// Kernel segments, keep in sync with crt0.S
+#define KERNEL_CS 0xF000
+#define KERNEL_DS 0x0000
+
 // IRQ offset in the interrupt descriptor table.
 #define IDT_IRQ_OFFSET 32
 

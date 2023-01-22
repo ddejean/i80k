@@ -26,9 +26,3 @@ global _start
     ; Should never be reached, but in case hang forever.
     cli
     hlt
-
-section .bss
-
-; Reserve 256 entries of 4 bytes for the Interrupt Descriptor Table.
-global _idt
-_idt: resb 1024

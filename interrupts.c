@@ -13,9 +13,8 @@ struct int_desc {
     uint16_t cs;            // Code segment where the routine is located.
 };
 
-// Interrupt Descriptor Table, allocated in crt0.S. It must be located at
-// address 0000:0000.
-extern struct int_desc idt[256];
+// Interrupt Descriptor Table start at address 0x00000 with 256 entries.
+static struct int_desc *idt = 0x0;
 
 // Code segment of the kernel.
 static uint16_t code_segment;
@@ -29,7 +28,7 @@ void interrupts_setup(uint16_t cs) {
     // Save the kernel code segment.
     code_segment = cs;
     // Clear the IDT.
-    kmemset(idt, 0, sizeof(idt));
+    kmemset(idt, 0, 256);
     // Configure the PIC for the board configuration and the offset in the
     // interrupt table.
     pic_initialize(IDT_IRQ_OFFSET);
