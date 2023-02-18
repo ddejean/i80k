@@ -4,30 +4,6 @@ bits 16
 
 section .text
 
-; void * kmemset(void *dst, int value, size_t count);
-global _kmemset
-_kmemset:
-    push    bp
-    mov     bp, sp
-    ; Save nonscratch registers.
-    push    di
-    push    cx
-    ; Set destination, value and count.
-    mov     di, [bp+4]
-    mov     ax, [bp+6]
-    mov     cx, [bp+8]
-    ; Trigger the copy.
-    cld
-    rep stosb
-    ; Restore registers.
-    pop     cx
-    pop     dx
-    ; Set the return value.
-    mov     ax, [bp+4]
-    pop     bp
-    ; Restore base point and leave.
-    ret
-
 ; ksegmemcpy(void *dst, uint16_t dst_seg, void *src, uint16_t src_seg, size_t n)
 global _ksegmemcpy
 _ksegmemcpy:

@@ -3,7 +3,7 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
-#include "stdint.h"
+#include <stdint.h>
 
 // outb emits <data> on io address <port>.
 void outb(uint16_t port, uint8_t data);

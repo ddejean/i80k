@@ -1,6 +1,8 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-LIBC_SRC := strings.S
+LIBC_SRC := \
+	string.S \
+	malloc.c
 LIBC_OUT := $(OUT)/libc
 LIBC_AR := $(LIBC_OUT)/libc.a
 

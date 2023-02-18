@@ -15,6 +15,7 @@ SOURCES := \
 	cpu.c \
 	interrupts.c \
 	firmware.c \
+	heap.c \
 	kernel.c
 
 OUT := out

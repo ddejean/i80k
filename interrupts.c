@@ -2,9 +2,11 @@
 
 #include "interrupts.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include "board.h"
 #include "cpu.h"
-#include "mem.h"
 
 // struct int_desc describes the content of an interrupt descriptor from the
 // interrupt descriptors table.
@@ -28,7 +30,7 @@ void interrupts_setup(uint16_t cs) {
     // Save the kernel code segment.
     code_segment = cs;
     // Clear the IDT.
-    kmemset(idt, 0, 256);
+    memset((void*)idt, 0, 256);
     // Configure the PIC for the board configuration and the offset in the
     // interrupt table.
     pic_initialize(IDT_IRQ_OFFSET);

@@ -3,7 +3,9 @@
 #include "board.h"
 #include "cpu.h"
 #include "firmware.h"
+#include "heap.h"
 #include "interrupts.h"
+#include "libc/malloc.h"
 
 extern void irq0(void);
 extern void irq1(void);
@@ -29,6 +31,9 @@ void kernel(uint16_t cs) {
     // initialized.
     firmware_data_setup();
     firmware_bss_setup();
+
+    // Initiliaze the heap to alloc future allocations.
+    heap_initialize(firmware_data_end(), (void*)KERNEL_STACK_LOW);
 
     interrupts_setup(cs);
     interrupts_handle(INT_IRQ0, irq0);

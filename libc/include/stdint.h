@@ -9,6 +9,7 @@ typedef unsigned int uint16_t;
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 
-typedef unsigned int size_t;
+typedef int intptr_t;
+typedef unsigned int uintptr_t;
 
 #endif  // _STDINT_H_

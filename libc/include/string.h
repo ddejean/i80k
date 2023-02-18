@@ -5,8 +5,8 @@
 
 #include <sys/types.h>
 
-// kmemset set the region of memory of size <count> located at <dst> with the
+// memset set the region of memory of size <count> located at <dst> with the
 // least significant byte of <value>.
 extern void *memset(void *dst, int value, size_t count);
 
-#endif // _STRINGS_H_
+#endif  // _STRINGS_H_

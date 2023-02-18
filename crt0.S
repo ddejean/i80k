@@ -14,7 +14,7 @@ global _start
     ; Set the stack segment and pointer at the end of the RAM.
     mov ax, 0x7000   ; Stack segment: 512K - 64K, last segment of RAM.
     mov ss, ax
-    mov ax, 0xffff   ; Stack: last address of a the last segment.
+    mov ax, 0x0      ; Stack: stored at the end of the first segment
     mov sp, ax
     mov ax, 0x0      ; Data: first memory segment.
     mov ds, ax

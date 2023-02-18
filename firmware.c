@@ -2,8 +2,10 @@
 
 #include "firmware.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include "board.h"
-#include "stdint.h"
 
 // End of the text segment, virtual address.
 extern uint8_t _etext[];
@@ -35,9 +37,13 @@ void firmware_data_setup(void) {
     ksegmemcpy(_sdata, KERNEL_DS, rom_data_start, KERNEL_CS, data_sz);
 }
 
+void* firmware_data_end(void) {
+    return (void*)_end;
+}
+
 void firmware_bss_setup(void) {
     size_t bss_sz = (uint16_t)_end - (uint16_t)_edata;
     // .bss section is located between the end of .data (_edata) and the end of
     // the .bss section (_end).
-    kmemset(_edata, 0, bss_sz);
+    memset(_edata, 0, bss_sz);
 }
