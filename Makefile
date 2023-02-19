@@ -1,12 +1,8 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-CC := bcc
-AS := nasm
-AR := ar86
-LD := ld86
-
-CLFAGS := -0 -ansi -I -Ilibc/include
-ASFLAGS := -f as86
+# Include build helpers.
+include build/definitions.mk
+include build/toolchains.mk
 
 SOURCES := \
 	crt0.S \
@@ -32,21 +28,23 @@ EEPROM_BIN := $(OUT)/eeprom.bin
 
 # Include librairies dependencies.
 include libc/kernel.mk
+# Include tests build rules.
+include tests/kernel.mk
 
 $(OUT):
 	mkdir -p $@
 
 $(OUT)/%.o: %.S | $(OUT)
-	$(AS) $(ASFLAGS) -o $@ $^
+	$(TARGET_AS) $(TARGET_ASFLAGS) -o $@ $^
 
 $(OUT)/%.o: %.c | $(OUT)
-	$(CC) $(CLFAGS) -o $@ -c $^
+	$(TARGET_CC) $(TARGET_CLFAGS) -Ilibc/include -o $@ -c $^
 
 $(KERNEL_BIN): $(OBJECTS) $(LIBC_AR)
-	$(LD) -d -i -T 0x8000 -D 0x400 -m -M -o $@ $^
+	$(TARGET_LD) -d -i -T 0x8000 -D 0x400 -m -M -o $@ $^
 
 $(BOOTSTRAP_BIN): bootstrap.S
-	$(AS) -f bin -o $@ $^
+	$(TARGET_AS) -f bin -o $@ $^
 
 .DEFAULT_GOAL := $(EEPROM_BIN)
 $(EEPROM_BIN): $(KERNEL_BIN) $(BOOTSTRAP_BIN)
