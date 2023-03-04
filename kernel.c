@@ -1,32 +1,44 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
+#include <stdint.h>
+
 #include "board.h"
 #include "cpu.h"
+#include "debug.h"
 #include "firmware.h"
 #include "heap.h"
+#include "hwalloc.h"
 #include "interrupts.h"
-#include "libc/malloc.h"
+#include "scheduler.h"
 
-extern void irq0(void);
-extern void irq1(void);
+void task0(void) {
+    uint8_t i = 0;
 
-void handler_irq0() {
-    outb(PORT_DEBUG, 1);
-    // Ack interrupt
-    outb(PORT_PIC, 0x20);
+    while (1) {
+        DEBUG(i++);
+    }
 }
 
-void handler_irq1() {
-    outb(PORT_DEBUG, 2);
-    // Ack interrupt
-    outb(PORT_PIC, 0x20);
+void task1(void) {
+    uint8_t i = 0xFF;
+
+    while (1) {
+        DEBUG(i--);
+    }
+}
+
+void task2(void) {
+    uint8_t i = 0xAA;
+
+    while (1) {
+        DEBUG(i);
+        i = i ^ 0xFF;
+    }
 }
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(uint16_t cs) {
-    uint8_t i, j;
-
     // Prepare .data and .bss sections to ensure data are correctly located and
     // initialized.
     firmware_data_setup();
@@ -35,19 +47,23 @@ void kernel(uint16_t cs) {
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(firmware_data_end(), (void*)KERNEL_STACK_LOW);
 
-    interrupts_setup(cs);
-    interrupts_handle(INT_IRQ0, irq0);
-    interrupts_handle(INT_IRQ1, irq1);
-    irq_enable(MASK_IRQ0 | MASK_IRQ1);
-    sti();
+    // Prepare the memory pages allocator.
+    hw_alloc_init(1, 7);
 
-    // Wait for interrupt and clear the debug port after a while.
+    // Setup the interruption controller.
+    interrupts_setup(cs);
+
+    // Prepare the scheduler.
+    scheduler_init();
+
+    // Start a first kthread.
+    scheduler_kthread_start(task0, DEFAULT_PRIORITY);
+    scheduler_kthread_start(task1, DEFAULT_PRIORITY);
+    scheduler_kthread_start(task2, DEFAULT_PRIORITY);
+
+    // Kernel idle task.
+    sti();
     while (1) {
         hlt();
-        for (i = 0; i < 255; i++) {
-            for (j = 0; j < 255; j++)
-                ;
-        }
-        outb(PORT_DEBUG, 0);
     }
 }

@@ -5,6 +5,17 @@
 
 #include <stdint.h>
 
+// CPU flags
+#define CARRY_FLAG (1 << 0)
+#define PARITY_FLAG (1 << 2)
+#define AUX_CARRY_FLAG (1 << 4)
+#define ZERO_FLAG (1 << 6)
+#define SIGN_FLAG (1 << 7)
+#define TRAP_FLAG (1 << 8)
+#define INTERRUPT_ENABLE_FLAG (1 << 9)
+#define DIRECTION_FLAG (1 << 10)
+#define OVERFLOW_FLAG (1 << 11)
+
 // outb emits <data> on io address <port>.
 void outb(uint16_t port, uint8_t data);
 

@@ -8,10 +8,13 @@ SOURCES := \
 	crt0.S \
 	int.S \
 	mem.S \
+	sched.S \
 	cpu.c \
 	interrupts.c \
 	firmware.c \
 	heap.c \
+	hwalloc.c \
+	scheduler.c \
 	kernel.c
 
 OUT := out
@@ -28,6 +31,7 @@ EEPROM_BIN := $(OUT)/eeprom.bin
 
 # Include librairies dependencies.
 include libc/kernel.mk
+include libbcc/kernel.mk
 # Include tests build rules.
 include tests/kernel.mk
 
@@ -40,7 +44,7 @@ $(OUT)/%.o: %.S | $(OUT)
 $(OUT)/%.o: %.c | $(OUT)
 	$(TARGET_CC) $(TARGET_CLFAGS) -Ilibc/include -o $@ -c $^
 
-$(KERNEL_BIN): $(OBJECTS) $(LIBC_AR)
+$(KERNEL_BIN): $(OBJECTS) $(LIBC_AR) $(LIBBCC_AR)
 	$(TARGET_LD) -d -i -T 0x8000 -D 0x400 -m -M -o $@ $^
 
 $(BOOTSTRAP_BIN): bootstrap.S

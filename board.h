@@ -8,6 +8,7 @@
 // Kernel segments, keep in sync with crt0.S
 #define KERNEL_CS 0xF000
 #define KERNEL_DS 0x0000
+#define KERNEL_SS 0x0000
 
 // Lower address of the kernel stack.
 #define KERNEL_STACK_LOW 0xF000

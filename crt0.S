@@ -12,7 +12,7 @@ extern _kernel
 global _start
 ..start:
     ; Set the stack segment and pointer at the end of the RAM.
-    mov ax, 0x7000   ; Stack segment: 512K - 64K, last segment of RAM.
+    mov ax, 0x0      ; Stack segment: first segment where kernel is located.
     mov ss, ax
     mov ax, 0x0      ; Stack: stored at the end of the first segment
     mov sp, ax
