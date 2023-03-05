@@ -12,4 +12,7 @@ typedef unsigned char uint8_t;
 typedef int intptr_t;
 typedef unsigned int uintptr_t;
 
+typedef long int intmax_t;
+typedef unsigned long int uintmax_t;
+
 #endif  // _STDINT_H_

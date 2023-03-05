@@ -1,6 +1,7 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "board.h"
 #include "cpu.h"
@@ -10,6 +11,7 @@
 #include "hwalloc.h"
 #include "interrupts.h"
 #include "scheduler.h"
+#include "uart.h"
 
 void task0(void) {
     uint8_t i = 0;
@@ -53,17 +55,25 @@ void kernel(uint16_t cs) {
     // Setup the interruption controller.
     interrupts_setup(cs);
 
+    // Setup the UART as soon as possible.
+    uart_initialize();
+    printf("Kernel booting...\r\n");
+
     // Prepare the scheduler.
+    printf("Starting scheduler\r\n");
     scheduler_init();
 
     // Start a first kthread.
-    scheduler_kthread_start(task0, DEFAULT_PRIORITY);
-    scheduler_kthread_start(task1, DEFAULT_PRIORITY);
-    scheduler_kthread_start(task2, DEFAULT_PRIORITY);
+    // scheduler_kthread_start(task0, DEFAULT_PRIORITY);
+    // scheduler_kthread_start(task1, DEFAULT_PRIORITY);
+    // scheduler_kthread_start(task2, DEFAULT_PRIORITY);
 
     // Kernel idle task.
-    sti();
+    // sti();
     while (1) {
-        hlt();
+        int i;
+        for (i = 0; i < 255; i++) {
+            DEBUG(i);
+        }
     }
 }

@@ -6,7 +6,6 @@ include build/toolchains.mk
 
 SOURCES := \
 	crt0.S \
-	int.S \
 	mem.S \
 	sched.S \
 	cpu.c \
@@ -15,6 +14,7 @@ SOURCES := \
 	heap.c \
 	hwalloc.c \
 	scheduler.c \
+	uart.c \
 	kernel.c
 
 OUT := out
