@@ -8,6 +8,7 @@ SOURCES := \
 	crt0.S \
 	mem.S \
 	sched.S \
+	int.S \
 	cpu.c \
 	interrupts.c \
 	firmware.c \
@@ -15,6 +16,7 @@ SOURCES := \
 	hwalloc.c \
 	scheduler.c \
 	uart.c \
+	ringbuffer.c \
 	kernel.c
 
 OUT := out

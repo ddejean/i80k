@@ -57,11 +57,13 @@ void kernel(uint16_t cs) {
 
     // Setup the UART as soon as possible.
     uart_initialize();
+    sti();
+
     printf("Kernel booting...\r\n");
 
     // Prepare the scheduler.
     printf("Starting scheduler\r\n");
-    scheduler_init();
+    // scheduler_init();
 
     // Start a first kthread.
     // scheduler_kthread_start(task0, DEFAULT_PRIORITY);
@@ -69,11 +71,15 @@ void kernel(uint16_t cs) {
     // scheduler_kthread_start(task2, DEFAULT_PRIORITY);
 
     // Kernel idle task.
-    // sti();
     while (1) {
-        int i;
+        int i, len;
+        char buffer[8];
         for (i = 0; i < 255; i++) {
             DEBUG(i);
+            len = uart_read(buffer, sizeof(buffer));
+            if (len > 0) {
+                uart_write(buffer, len);
+            }
         }
     }
 }

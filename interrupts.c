@@ -25,12 +25,13 @@ static uint16_t code_segment;
 static void pic_initialize(uint8_t offset);
 static void pic_enable(uint8_t mask);
 static void pic_disable(uint8_t mask);
+static void pic_ack(void);
 
 void interrupts_setup(uint16_t cs) {
     // Save the kernel code segment.
     code_segment = cs;
     // Clear the IDT.
-    memset((void*)idt, 0, 256);
+    memset((void *)idt, 0, 256);
     // Configure the PIC for the board configuration and the offset in the
     // interrupt table.
     pic_initialize(IDT_IRQ_OFFSET);
@@ -44,6 +45,8 @@ void interrupts_handle(uint8_t index, void (*handler)(void)) {
 void irq_enable(uint8_t mask) { pic_enable(mask); }
 
 void irq_disable(uint8_t mask) { pic_disable(mask); }
+
+void irq_ack(void) { pic_ack(); }
 
 // PIC ports
 #define PIC_A0_0 PORT_PIC        // PIC with A0=0
@@ -89,3 +92,5 @@ static void pic_disable(uint8_t mask) {
     value |= mask;
     outb(PIC_A0_1, value);
 }
+
+static void pic_ack(void) { outb(PORT_PIC, 0x20); }

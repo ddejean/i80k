@@ -3,7 +3,7 @@
 #ifndef _INTERRUPTS_H_
 #define _INTERRUPTS_H_
 
-#include "stdint.h"
+#include <stdint.h>
 
 // Interruptions indentifiers.
 #define INT_IRQ0 32
@@ -40,5 +40,8 @@ void irq_enable(uint8_t mask);
 
 // irq_disable disables interrupts on the lines provided in mask.
 void irq_disable(uint8_t mask);
+
+// irq_ack acknoledge an interrupt to the interrupt controller.
+void irq_ack(void);
 
 #endif  // _INTERRUPTS_H_
