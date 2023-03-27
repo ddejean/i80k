@@ -22,4 +22,7 @@
 #define PORT_DEBUG 0x80
 #define PORT_UART 0x3F8
 
+// PIT clock frequency: 1.25Mhz
+#define PIT_FREQ 1250000
+
 #endif  // _BOARD_H_

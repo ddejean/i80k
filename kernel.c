@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "board.h"
+#include "clock.h"
 #include "cpu.h"
 #include "debug.h"
 #include "firmware.h"
@@ -54,15 +55,19 @@ void kernel(uint16_t cs) {
 
     // Setup the interruption controller.
     interrupts_setup(cs);
+    sti();
 
     // Setup the UART as soon as possible.
     uart_initialize();
-    sti();
 
     printf("Kernel booting...\r\n");
 
+    // Initialize the clock system.
+    printf("Clock subsystem setup\r\n");
+    clock_initialize();
+
     // Prepare the scheduler.
-    printf("Starting scheduler\r\n");
+    // printf("Scheduler starting.\r\n");
     // scheduler_init();
 
     // Start a first kthread.
@@ -71,15 +76,9 @@ void kernel(uint16_t cs) {
     // scheduler_kthread_start(task2, DEFAULT_PRIORITY);
 
     // Kernel idle task.
+    int i = 0;
     while (1) {
-        int i, len;
-        char buffer[8];
-        for (i = 0; i < 255; i++) {
-            DEBUG(i);
-            len = uart_read(buffer, sizeof(buffer));
-            if (len > 0) {
-                uart_write(buffer, len);
-            }
-        }
+        printf("%d\r\n", i++);
+        clock_wait(1000, POLL_WAIT);
     }
 }

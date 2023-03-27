@@ -70,8 +70,7 @@ static void pic_initialize(uint8_t offset) {
     // - Level triggered (not edge triggered)
     // - Interrupts handlers entries are 4 bytes wide (segment + offset)
     // - Single PIC
-    outb(PIC_A0_0,
-         ICW1_INIT | ICW1_LEVEL | ICW1_INTERVAL4 | ICW1_SINGLE | ICW1_ICW4);
+    outb(PIC_A0_0, ICW1_INIT | ICW1_INTERVAL4 | ICW1_SINGLE | ICW1_ICW4);
     // Second configuration word (ICW2): offset in interrupts table. 8 is the
     // classical offset for IBM PC/XT.
     outb(PIC_A0_1, offset);

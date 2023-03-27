@@ -29,4 +29,29 @@ uart_int_handler:
     pop %cx
     pop %bx
     pop %ax
+
+.extern clock_handler
+.global clock_int_handler
+clock_int_handler:
+    // Save current activity state.
+    push %ax
+    push %bx
+    push %cx
+    push %dx
+    push %di
+    push %si
+    push %ds
+    push %es
+    // Call the C interrupt handler.
+    call clock_handler
+    // Restore current activity state.
+    pop %es
+    pop %ds
+    pop %si
+    pop %di
+    pop %dx
+    pop %cx
+    pop %bx
+    pop %ax
     iret
+

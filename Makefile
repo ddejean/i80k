@@ -11,10 +11,12 @@ SOURCES := \
 	sched.S \
 	int.S \
 	console.c \
+	clock.c \
 	interrupts.c \
 	firmware.c \
 	heap.c \
 	hwalloc.c \
+	pit.c \
 	scheduler.c \
 	uart.c \
 	ringbuffer.c \
