@@ -6,6 +6,11 @@
 #include "malloc.h"
 
 #include <stddef.h>
+#include <stdint.h>
+
+// External functions provided by the kernel.
+extern int brk(void *addr);
+extern void *sbrk(intptr_t increment);
 
 // Heap, NULL at first and will grow with the allocations.
 char *heap;

@@ -17,18 +17,24 @@
 #define OVERFLOW_FLAG (1 << 11)
 
 // outb emits <data> on io address <port>.
-void outb(uint16_t port, uint8_t data);
+static inline void outb(uint16_t port, uint8_t data) {
+    __asm__ __volatile__("outb %1, %0" : : "dN"(port), "a"(data));
+}
 
 // inb retries a byte from io address <port>.
-uint8_t inb(uint16_t port);
+static inline uint8_t inb(uint16_t port) {
+    uint8_t data;
+    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "dN"(port));
+    return data;
+}
 
 // cli clears the interrupts flag which disables the interruptions.
-void cli(void);
+static inline void cli(void) { __asm__ __volatile__("cli"); }
 
 // sti sets the interrupts flag which enables the interruptions.
-void sti(void);
+static inline void sti(void) { __asm__ __volatile__("sti"); }
 
 // hlt pauses the processor until an interruption.
-void hlt(void);
+static inline void hlt(void) { __asm__ __volatile__("hlt"); }
 
 #endif  // _CPU_H_

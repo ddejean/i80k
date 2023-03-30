@@ -38,7 +38,7 @@
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
-#define PRINTF_NTOA_BUFFER_SIZE 32U
+#define PRINTF_NTOA_BUFFER_SIZE 32
 
 // support for the ptrdiff_t type (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
@@ -60,7 +60,7 @@
 #define FLAGS_ADAPT_EXP (1U << 11U)
 
 // external function used to print a character
-extern void _putchar(char character);
+extern int putchar(int c);
 
 // output function type
 typedef void (*out_fct_type)(char character, void* buffer, size_t idx,
@@ -88,13 +88,13 @@ static void _out_null(char character, void* buffer, size_t idx, size_t maxlen) {
     (void)maxlen;
 }
 
-// internal _putchar wrapper
+// internal putchar wrapper
 static void _out_char(char character, void* buffer, size_t idx, size_t maxlen) {
     (void)buffer;
     (void)idx;
     (void)maxlen;
     if (character) {
-        _putchar(character);
+        putchar(character);
     }
 }
 
@@ -138,7 +138,7 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx,
 
     // pad spaces up to given width
     if (!(flags & FLAGS_LEFT) && !(flags & FLAGS_ZEROPAD)) {
-        size_t i;
+        unsigned int i;
         for (i = len; i < width; i++) {
             out(' ', buffer, idx++, maxlen);
         }
@@ -151,7 +151,7 @@ static size_t _out_rev(out_fct_type out, char* buffer, size_t idx,
 
     // append pad spaces up to given width
     if (flags & FLAGS_LEFT) {
-        while (idx - start_idx < width) {
+        while (idx - start_idx < (size_t)width) {
             out(' ', buffer, idx++, maxlen);
         }
     }
@@ -648,6 +648,7 @@ int fctprintf(void (*out)(char character, void* arg), void* arg, char* format,
               ...) {
     va_list va;
     int ret;
+    (void)arg;
     out_fct_wrap_type out_fct_wrap;
     va_start(va, format);
     out_fct_wrap.arg = 0;

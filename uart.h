@@ -11,9 +11,9 @@ void uart_initialize(void);
 
 // uart_read reads <count> bytes of data from the wire and puts them into
 // <buffer>.
-int uart_read(uint8_t *buffer, size_t count);
+int uart_read(const char *buffer, const size_t count);
 
 // uart_write sends <count> bytes from <buffer> onto the wire.
-int uart_write(uint8_t *buffer, size_t count);
+int uart_write(const char *buffer, const size_t count);
 
 #endif  // _UART_C_

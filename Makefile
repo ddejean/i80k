@@ -6,10 +6,11 @@ include build/toolchains.mk
 
 SOURCES := \
 	crt0.S \
+	bootstrap.S \
 	mem.S \
 	sched.S \
 	int.S \
-	cpu.c \
+	console.c \
 	interrupts.c \
 	firmware.c \
 	heap.c \
@@ -26,14 +27,10 @@ OBJECTS := $(addprefix $(OUT)/, \
 		$(patsubst %.c,%.o,$(SOURCES)) \
 	) \
 )
-
 KERNEL_BIN := $(OUT)/kernel.bin
-BOOTSTRAP_BIN := $(OUT)/bootstrap.bin
-EEPROM_BIN := $(OUT)/eeprom.bin
 
 # Include librairies dependencies.
 include libc/kernel.mk
-include libbcc/kernel.mk
 # Include tests build rules.
 include tests/kernel.mk
 
@@ -44,19 +41,11 @@ $(OUT)/%.o: %.S | $(OUT)
 	$(TARGET_AS) $(TARGET_ASFLAGS) -o $@ $^
 
 $(OUT)/%.o: %.c | $(OUT)
-	$(TARGET_CC) $(TARGET_CLFAGS) -Ilibc/include -o $@ -c $^
+	$(TARGET_CC) $(TARGET_CLFAGS) -o $@ -c $^
 
-$(KERNEL_BIN): $(OBJECTS) $(LIBC_AR) $(LIBBCC_AR)
-	$(TARGET_LD) -d -i -T 0x8000 -D 0x400 -m -M -o $@ $^
-
-$(BOOTSTRAP_BIN): bootstrap.S
-	$(TARGET_AS) -f bin -o $@ $^
-
-.DEFAULT_GOAL := $(EEPROM_BIN)
-$(EEPROM_BIN): $(KERNEL_BIN) $(BOOTSTRAP_BIN)
-	dd if=/dev/zero ibs=1k count=32 | tr "\000" "\377" > $@
-	dd if=$(KERNEL_BIN) of=$@ conv=notrunc
-	dd if=$(BOOTSTRAP_BIN) of=$@ bs=1 seek=32752 conv=notrunc
+.DEFAULT_GOAL := $(KERNEL_BIN)
+$(KERNEL_BIN): kernel.lds $(OBJECTS) $(LIBC_AR)
+	$(TARGET_LD) $(TARGET_LDFLAGS) -T $< -o $@ $(filter-out $<, $^) $(TARGET_LDLIBS)
 
 .PHONY: clean
 clean:

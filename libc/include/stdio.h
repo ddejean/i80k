@@ -3,6 +3,9 @@
 #ifndef _STDIO_H_
 #define _STDIO_H_
 
+#include <stdarg.h>
+#include <stddef.h>
+
 int printf(const char* format, ...);
 int sprintf(char* buffer, const char* format, ...);
 int snprintf(char* buffer, size_t count, const char* format, ...);

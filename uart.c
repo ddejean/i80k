@@ -103,7 +103,7 @@ void uart_handler(void) {
 
     if (status & STATUS_TXRDY) {
         if (!ring_buffer_is_empty(&tx_ring)) {
-            ring_buffer_dequeue(&tx_ring, &byte);
+            ring_buffer_dequeue(&tx_ring, (char *)&byte);
             outb(P8251A_DATA, byte);
         } else {
             outb(P8251A_CMD, CMD_RX_ENABLE);
@@ -113,7 +113,7 @@ void uart_handler(void) {
     irq_ack();
 }
 
-int uart_read(uint8_t *buffer, size_t count) {
+int uart_read(const char *buffer, const size_t count) {
     size_t len = 0;
 
     // Mask the interrupts to avoid race conditions on the ring buffer.
@@ -128,7 +128,7 @@ int uart_read(uint8_t *buffer, size_t count) {
     return len;
 }
 
-int uart_write(uint8_t *buffer, size_t count) {
+int uart_write(const char *buffer, const size_t count) {
     // Mask the interrupts to avoid race conditions on the ring buffer.
     cli();
     // Put the data in the buffer.
@@ -139,5 +139,3 @@ int uart_write(uint8_t *buffer, size_t count) {
     outb(P8251A_CMD, CMD_RX_ENABLE | CMD_TX_ENABLE);
     return count;
 }
-
-void _putchar(char c) { uart_write(&c, sizeof(c)); }

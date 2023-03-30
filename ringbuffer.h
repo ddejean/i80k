@@ -29,8 +29,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define RING_BUFFER_ASSERT(x) x
-
 // Checks if the buffer_size is a power of two.  Due to the design only
 // RING_BUFFER_SIZE-1 items can be contained in the buffer.  buffer_size must be
 // a power of two.
@@ -66,13 +64,14 @@ void ring_buffer_init(ring_buffer_t *buffer, char *buf, size_t buf_size);
 // Adds a byte to a ring buffer.
 // @param buffer The buffer in which the data should be placed.
 // @param data The byte to place.
-void ring_buffer_queue(ring_buffer_t *buffer, char data);
+void ring_buffer_queue(ring_buffer_t *buffer, const char data);
 
 // Adds an array of bytes to a ring buffer.
 // @param buffer The buffer in which the data should be placed.
 // @param data A pointer to the array of bytes to place in the queue.
 // @param size The size of the array.
-void ring_buffer_queue_arr(ring_buffer_t *buffer, char *data, size_t size);
+void ring_buffer_queue_arr(ring_buffer_t *buffer, const char *data,
+                           size_t size);
 
 // Returns the oldest byte in a ring buffer.
 // @param buffer The buffer from which the data should be returned.
@@ -97,16 +96,24 @@ uint8_t ring_buffer_peek(ring_buffer_t *buffer, char *data, size_t index);
 // Returns whether a ring buffer is empty.
 // @param buffer The buffer for which it should be returned whether it is empty.
 // @return 1 if empty; 0 otherwise.
-uint8_t ring_buffer_is_empty(ring_buffer_t *buffer);
+static inline uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
+    return (buffer->head_index == buffer->tail_index);
+}
 
 // Returns whether a ring buffer is full.
 // @param buffer The buffer for which it should be returned whether it is full.
 // @return 1 if full; 0 otherwise.
-uint8_t ring_buffer_is_full(ring_buffer_t *buffer);
+static inline uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
+    return ((buffer->head_index - buffer->tail_index) &
+            RING_BUFFER_MASK(buffer)) == RING_BUFFER_MASK(buffer);
+}
 
 // Returns the number of items in a ring buffer.
 // @param buffer The buffer for which the number of items should be returned.
 // @return The number of items in the ring buffer.
-size_t ring_buffer_num_items(ring_buffer_t *buffer);
+static inline size_t ring_buffer_num_items(ring_buffer_t *buffer) {
+    return ((buffer->head_index - buffer->tail_index) &
+            RING_BUFFER_MASK(buffer));
+}
 
 #endif  // _RINGBUFFER_H_

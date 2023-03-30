@@ -26,27 +26,13 @@
 #include "ringbuffer.h"
 
 void ring_buffer_init(ring_buffer_t *buffer, char *buf, size_t buf_size) {
-    RING_BUFFER_ASSERT(RING_BUFFER_IS_POWER_OF_TWO(buf_size) == 1);
     buffer->buffer = buf;
     buffer->buffer_mask = buf_size - 1;
     buffer->tail_index = 0;
     buffer->head_index = 0;
 }
 
-uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
-    return (buffer->head_index == buffer->tail_index);
-}
-
-uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
-    return ((buffer->head_index - buffer->tail_index) &
-            RING_BUFFER_MASK(buffer)) == RING_BUFFER_MASK(buffer);
-}
-
-size_t ring_buffer_num_items(ring_buffer_t *buffer) {
-    return ((buffer->head_index - buffer->tail_index) &
-            RING_BUFFER_MASK(buffer));
-}
-void ring_buffer_queue(ring_buffer_t *buffer, char data) {
+void ring_buffer_queue(ring_buffer_t *buffer, const char data) {
     // Is buffer full?
     if (ring_buffer_is_full(buffer)) {
         // Is going to overwrite the oldest byte
@@ -60,7 +46,8 @@ void ring_buffer_queue(ring_buffer_t *buffer, char data) {
     buffer->head_index = ((buffer->head_index + 1) & RING_BUFFER_MASK(buffer));
 }
 
-void ring_buffer_queue_arr(ring_buffer_t *buffer, char *data, size_t size) {
+void ring_buffer_queue_arr(ring_buffer_t *buffer, const char *data,
+                           size_t size) {
     // Add bytes; one by one
     size_t i;
     for (i = 0; i < size; i++) {

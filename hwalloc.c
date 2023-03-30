@@ -2,19 +2,19 @@
 
 #include "hwalloc.h"
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "debug.h"
 
-#define PAGES_HOLDERS   4
-#define PAGES_COUNT     16
-#define PAGES_FULL      0xffff
+#define PAGES_HOLDERS 4
+#define PAGES_COUNT 16
+#define PAGES_FULL 0xffff
 
-#define HOLDER_SHIFT    14
-#define PAGE_SHIFT      10
+#define HOLDER_SHIFT 14
+#define PAGE_SHIFT 10
 
 struct seg {
     uint16_t segment;
@@ -42,7 +42,7 @@ void hw_alloc_init(unsigned int first_seg, unsigned int last_seg) {
 }
 
 struct hw_page *hw_page_alloc() {
-    int i, j, k;
+    unsigned int i, j, k;
     uint16_t pages;
     struct hw_page *page;
 
@@ -73,12 +73,10 @@ struct hw_page *hw_page_alloc() {
     return NULL;
 }
 
-uint16_t hw_page_seg(struct hw_page *p) {
-    return segments[p->index].segment;
-}
+uint16_t hw_page_seg(struct hw_page *p) { return segments[p->index].segment; }
 
 uint16_t *hw_page_addr(struct hw_page *p) {
-    return (uint16_t*)((p->holder << HOLDER_SHIFT) | (p->page << PAGE_SHIFT));
+    return (uint16_t *)((p->holder << HOLDER_SHIFT) | (p->page << PAGE_SHIFT));
 }
 
 void hw_page_free(struct hw_page *p) {
