@@ -3,7 +3,7 @@
 #ifndef _STDLIB_H_
 #define _STDLIB_H_
 
-#include <sys/types.h>
+#include <stddef.h>
 
 extern void *malloc(size_t size);
 

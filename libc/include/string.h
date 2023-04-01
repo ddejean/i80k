@@ -3,7 +3,7 @@
 #ifndef _STRINGS_H_
 #define _STRINGS_H_
 
-#include <sys/types.h>
+#include <stddef.h>
 
 // memset set the region of memory of size <count> located at <dst> with the
 // least significant byte of <value>.

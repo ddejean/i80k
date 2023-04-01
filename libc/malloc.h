@@ -3,7 +3,7 @@
 #ifndef _MALLOC_H_
 #define _MALLOC_H_
 
-#include <sys/types.h>
+#include <stddef.h>
 
 // malloc allocates <size> bytes and returns a pointer to the allocated memory.
 // The memory is not initialized. If <size> is 0, then malloc returns either

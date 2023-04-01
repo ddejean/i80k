@@ -29,15 +29,27 @@ OBJECTS := $(addprefix $(OUT)/, \
 		$(patsubst %.c,%.o,$(SOURCES)) \
 	) \
 )
+
+DEPS := $(addprefix $(OUT)/, \
+	$(patsubst %.c,%.d, \
+		$(filter %.c,$(SOURCES)) \
+	) \
+)
+
 KERNEL_BIN := $(OUT)/kernel.bin
 
 # Include librairies dependencies.
 include libc/kernel.mk
 # Include tests build rules.
 include tests/kernel.mk
+# Include generated dependencies
+include $(DEPS)
 
 $(OUT):
 	mkdir -p $@
+
+$(OUT)/%.d: %.c | $(OUT)
+	$(TARGET_CC) $(TARGET_CLFAGS) -MM -MF $@ $^
 
 $(OUT)/%.o: %.S | $(OUT)
 	$(TARGET_AS) $(TARGET_ASFLAGS) -o $@ $^
