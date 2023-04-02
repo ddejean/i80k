@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "board.h"
 #include "cpu.h"
@@ -51,6 +52,16 @@
 #define STATUS_SYNDET (1 << 6)
 #define STATUS_DATA_SET_RDY (1 << 7)
 
+// Operating mode of the UART.
+typedef enum uart_mode {
+    NONE,     // UART driver is uninitialized
+    POLLED,   // UART driver is initialized to work in polling mode.
+    BUFFERED  // UART driver is initialized to working with buffers and
+              // interrupts.
+} mode_t;
+
+static mode_t mode = NONE;
+
 // Assembly interrupt handler for the UART.
 extern void uart_int_handler(void);
 
@@ -65,10 +76,7 @@ char tx_buf[RINGBUF_SIZE];
 // TX ring buffer instance.
 ring_buffer_t tx_ring;
 
-void uart_initialize(void) {
-    // Prepare the reception ring buffer.
-    ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
-    ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
+static void p8251a_init(void) {
     // According to the datasheet, the chip might be in an unknown configuration
     // state after power up. Complete the worst case scenarion initialization
     // sequence and manually reset the chip to ensure we're in the right state.
@@ -78,12 +86,37 @@ void uart_initialize(void) {
     outb(P8251A_CMD, CMD_RESET);
     // Configuration mode.
     outb(P8251A_CMD, MODE_ASYNC_64 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
+}
+
+void uart_early_initialize(void) {
+    // Configure the UART controller.
+    p8251a_init();
+    // The driver is initialized in polling mode.
+    mode = POLLED;
+    // Only enable transmission.
+    outb(P8251A_CMD, CMD_TX_ENABLE);
+}
+
+void uart_initialize(void) {
+    // Prepare the reception ring buffer.
+    ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
+    ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
+    // Configure the P8251A.
+    p8251a_init();
+    // The driver is configured in buffered mode with interruptions.
+    mode = BUFFERED;
     // Hook up the interrupt handler.
     interrupts_handle(INT_IRQ4, uart_int_handler);
     // Unmask the UART interrupt.
     irq_enable(MASK_IRQ4);
-    // Enable RX and TX.
+    // Enable RX only (TX will be enabled when bytes are ready to send).
     outb(P8251A_CMD, CMD_RX_ENABLE);
+
+    // Print only after the UART is correctly initialized.
+    printf(
+        "UART: mode: buffered, baudrate: %lu, ring buffers size: %d bytes, "
+        "using IRQ4\r\n",
+        PIT_FREQ / 64, RINGBUF_SIZE);
 }
 
 void uart_handler(void) {
@@ -116,6 +149,11 @@ void uart_handler(void) {
 int uart_read(const char *buffer, const size_t count) {
     size_t len = 0;
 
+    if (mode != BUFFERED) {
+        // Reception is disabled when not in buffered mode.
+        return -1;
+    }
+
     // Mask the interrupts to avoid race conditions on the ring buffer.
     cli();
     // Read the data from the ring buffer.
@@ -128,14 +166,38 @@ int uart_read(const char *buffer, const size_t count) {
     return len;
 }
 
+static inline void uart_write_char(const char c) {
+    char status;
+    // Wait for the queue to be empty before sending a byte.
+    do {
+        status = inb(P8251A_CMD);
+    } while (!(status & STATUS_TXRDY));
+    // Send the byte of data.
+    outb(P8251A_DATA, c);
+}
+
 int uart_write(const char *buffer, const size_t count) {
-    // Mask the interrupts to avoid race conditions on the ring buffer.
-    cli();
-    // Put the data in the buffer.
-    ring_buffer_queue_arr(&tx_ring, buffer, count);
-    // Re-enable interrupts now.
-    sti();
-    // Enable TX.
-    outb(P8251A_CMD, CMD_RX_ENABLE | CMD_TX_ENABLE);
-    return count;
+    switch (mode) {
+        case POLLED:
+            for (size_t i = 0; i < count; i++) {
+                uart_write_char(buffer[i]);
+            }
+            return count;
+
+        case BUFFERED:
+            // Mask the interrupts to avoid race conditions on the ring buffer.
+            cli();
+            // Put the data in the buffer.
+            ring_buffer_queue_arr(&tx_ring, buffer, count);
+            // Re-enable interrupts now.
+            sti();
+            // Enable TX.
+            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_TX_ENABLE);
+            return count;
+
+        case NONE:
+        default:
+            // Driver is not initialized, nothing to do.
+            return -1;
+    }
 }

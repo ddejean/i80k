@@ -47,11 +47,19 @@ void kernel(uint16_t cs) {
     firmware_data_setup();
     firmware_bss_setup();
 
+    // Initialize the UART in polling mode to enable early printf.
+    uart_early_initialize();
+
+    printf("Kernel booting...\r\n");
+    printf("  Code segment: %04X\r\n", cs);
+    printf("  Data segment: %04X\r\n", KERNEL_DS);
+    printf("  Stack segment: %04X\r\n", KERNEL_SS);
+
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(firmware_data_end(), (void*)KERNEL_STACK_LOW);
 
     // Prepare the memory pages allocator.
-    hw_alloc_init(1, 7);
+    hw_alloc_init(1, 14);
 
     // Setup the interruption controller.
     interrupts_setup(cs);
@@ -60,10 +68,7 @@ void kernel(uint16_t cs) {
     // Setup the UART as soon as possible.
     uart_initialize();
 
-    printf("Kernel booting...\r\n");
-
     // Initialize the clock system.
-    printf("Clock subsystem setup\r\n");
     clock_initialize();
 
     // Prepare the scheduler.

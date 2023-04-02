@@ -2,6 +2,8 @@
 
 #include "clock.h"
 
+#include <stdio.h>
+
 #include "board.h"
 #include "cpu.h"
 #include "interrupts.h"
@@ -23,6 +25,9 @@ unsigned long clock;
 extern void clock_int_handler(void);
 
 void clock_initialize(void) {
+    printf("Clock: frequency: %luHz, period: %dms, using IRQ0\r\n",
+           (long unsigned int)PIT_FREQ, CLOCK_INC_MS);
+
     ticks = 0;
     clock = 0;
     interrupts_handle(INT_IRQ0, clock_int_handler);
