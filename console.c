@@ -4,6 +4,7 @@
 // stdout.
 
 #include <stdint.h>
+#include <string.h>
 
 #include "uart.h"
 
@@ -13,12 +14,11 @@ int putchar(int c) {
 }
 
 int puts(const char *s) {
-    int i = 0;
-    while (*s) {
-        putchar(*s);
-        s++;
-        i++;
-    }
-    putchar('\n');
-    return ++i;
+    size_t len;
+    char c = '\n';
+
+    len = strlen(s);
+    uart_write(s, len);
+    uart_write(&c, sizeof(c));
+    return ++len;
 }

@@ -27,3 +27,23 @@ memset:
     pop     %bp
     // Restore base point and leave.
     ret
+
+// size_t strlen(const char* s);
+.global strlen
+strlen:
+    push    %bp
+    mov     %sp, %bp
+    push    %di
+    // Search for '\0'
+    mov     4(%bp), %dx
+    mov     %dx, %di
+    mov     $0xffff, %cx
+    xor     %ax, %ax
+    repnz   scasb
+    // Get the distance between the begining of the string and the '\0'.
+    sub     %dx, %di
+    lea     -1(%di), %ax
+    // Restore state and return
+    pop     %di
+    pop     %bp
+    ret

@@ -9,4 +9,7 @@
 // least significant byte of <value>.
 extern void *memset(void *dst, int value, size_t count);
 
+// size_t strlen(const char* s);
+extern size_t strlen(const char *s);
+
 #endif  // _STRINGS_H_
