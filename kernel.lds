@@ -1,5 +1,7 @@
 /* Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com> */
 
+OUTPUT_FORMAT(binary)
+
 MEMORY {
   rom       (rx)  : ORIGIN = 0x8000, LENGTH = 0x7FF0
   bootstrap (rx)  : ORIGIN = 0xFFF0, LENGTH = 0x0010

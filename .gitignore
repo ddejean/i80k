@@ -1,3 +1,4 @@
-out
 .vscode
-build/gcc-ia16
+bazel-*
+toolchain/ia16-elf
+

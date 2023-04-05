@@ -9,7 +9,7 @@
 #include "board.h"
 #include "cpu.h"
 #include "interrupts.h"
-#include "ringbuffer.h"
+#include "utils/ringbuffer.h"
 
 #define P8251A_CMD (PORT_UART | 1)
 #define P8251A_DATA (PORT_UART)

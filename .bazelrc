@@ -1,0 +1,11 @@
+# Use our custom-configured c++ toolchain for the target and standard toolchain
+# for the host.
+build:8088-rev2_config --crosstool_top=//toolchain:ia16_suite
+build:8088-rev2_config --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+
+# Set build configuration for the project.
+build:8088-rev2_config --cpu=i8088
+build:8088-rev2_config --features=all_warnings
+build:8088-rev2_config --features=extra_warnings
+build:8088-rev2_config --features=treat_warnings_as_errors
+build:8088-rev2_config --features=tiny_memory_model
