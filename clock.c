@@ -6,6 +6,7 @@
 
 #include "board.h"
 #include "cpu.h"
+#include "debug.h"
 #include "interrupts.h"
 #include "pit.h"
 
@@ -25,7 +26,7 @@ unsigned long clock;
 extern void clock_int_handler(void);
 
 void clock_initialize(void) {
-    printf("Clock: frequency: %luHz, period: %dms, using IRQ0\r\n",
+    printk("Clock: frequency: %luHz, period: %dms, using IRQ0\r\n",
            (long unsigned int)PIT_FREQ, CLOCK_INC_MS);
 
     ticks = 0;

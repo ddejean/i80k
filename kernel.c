@@ -1,7 +1,6 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 #include <stdint.h>
-#include <stdio.h>
 
 #include "board.h"
 #include "clock.h"
@@ -50,10 +49,10 @@ void kernel(uint16_t cs) {
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize();
 
-    printf("Kernel booting...\r\n");
-    printf("  Code segment: %04X\r\n", cs);
-    printf("  Data segment: %04X\r\n", KERNEL_DS);
-    printf("  Stack segment: %04X\r\n", KERNEL_SS);
+    printk("Kernel booting...\r\n");
+    printk("  Code segment: %04X\r\n", cs);
+    printk("  Data segment: %04X\r\n", KERNEL_DS);
+    printk("  Stack segment: %04X\r\n", KERNEL_SS);
 
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(firmware_data_end(), (void*)KERNEL_STACK_LOW);
@@ -83,7 +82,7 @@ void kernel(uint16_t cs) {
     // Kernel idle task.
     int i = 0;
     while (1) {
-        printf("%d\r\n", i++);
+        printk("%d\r", i++);
         clock_wait(1000, POLL_WAIT);
     }
 }

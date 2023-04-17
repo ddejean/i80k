@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,7 +30,7 @@ void hw_alloc_init(unsigned int first_seg, unsigned int last_seg) {
     size_t sz;
     unsigned int i;
 
-    printf("Page allocator: segments: %04X to %04X, 1K pages: %d\r\n",
+    printk("Page allocator: segments: %04X to %04X, 1K pages: %d\r\n",
            first_seg << 12, last_seg << 12,
            (last_seg - first_seg + 1) * PAGES_HOLDERS * PAGES_COUNT);
 

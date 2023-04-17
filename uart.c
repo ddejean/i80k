@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "board.h"
 #include "cpu.h"
+#include "debug.h"
 #include "interrupts.h"
 #include "utils/ringbuffer.h"
 
@@ -113,7 +113,7 @@ void uart_initialize(void) {
     outb(P8251A_CMD, CMD_RX_ENABLE);
 
     // Print only after the UART is correctly initialized.
-    printf(
+    printk(
         "UART: mode: buffered, baudrate: %lu, ring buffers size: %d bytes, "
         "using IRQ4\r\n",
         PIT_FREQ / 64, RINGBUF_SIZE);
