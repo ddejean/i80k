@@ -8,4 +8,4 @@
 
 bootstrap:
     // Jump to the begining of the ROM with the appropriate kernel segment.
-    jmp $KERNEL_CS, $start
+    jmp $BOOTSTRAP_CS, $start

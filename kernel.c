@@ -6,7 +6,6 @@
 #include "clock.h"
 #include "cpu.h"
 #include "debug.h"
-#include "firmware.h"
 #include "heap.h"
 #include "hwalloc.h"
 #include "interrupts.h"
@@ -16,11 +15,6 @@
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(uint16_t cs) {
-    // Prepare .data and .bss sections to ensure data are correctly located and
-    // initialized.
-    firmware_data_setup();
-    firmware_bss_setup();
-
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize();
 
@@ -30,7 +24,7 @@ void kernel(uint16_t cs) {
     printk("  Stack segment: %04X\r\n", KERNEL_SS);
 
     // Initiliaze the heap to alloc future allocations.
-    heap_initialize(firmware_data_end(), (void*)KERNEL_STACK_LOW);
+    heap_initialize(_bss_end, (void*)KERNEL_STACK_LOW);
 
     // Prepare the memory pages allocator.
     hw_alloc_init(1, 14);

@@ -10,9 +10,10 @@
 // physically located at address F000:8000. The segment is calculated to
 // include the offset until the ROM is relocated.
 // CS = 0xF000 + (0x8000 - 0x400) >> 4
-#define KERNEL_CS 0xF7C0
+#define BOOTSTRAP_CS 0xF7C0
 
 // Kernel segments, keep in sync with crt0.S
+#define KERNEL_CS 0x0000
 #define KERNEL_DS 0x0000
 #define KERNEL_SS 0x0000
 
