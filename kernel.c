@@ -13,31 +13,6 @@
 #include "scheduler.h"
 #include "uart.h"
 
-void task0(void) {
-    uint8_t i = 0;
-
-    while (1) {
-        DEBUG(i++);
-    }
-}
-
-void task1(void) {
-    uint8_t i = 0xFF;
-
-    while (1) {
-        DEBUG(i--);
-    }
-}
-
-void task2(void) {
-    uint8_t i = 0xAA;
-
-    while (1) {
-        DEBUG(i);
-        i = i ^ 0xFF;
-    }
-}
-
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(uint16_t cs) {
@@ -69,15 +44,6 @@ void kernel(uint16_t cs) {
 
     // Initialize the clock system.
     clock_initialize();
-
-    // Prepare the scheduler.
-    // printf("Scheduler starting.\r\n");
-    // scheduler_init();
-
-    // Start a first kthread.
-    // scheduler_kthread_start(task0, DEFAULT_PRIORITY);
-    // scheduler_kthread_start(task1, DEFAULT_PRIORITY);
-    // scheduler_kthread_start(task2, DEFAULT_PRIORITY);
 
     // Kernel idle task.
     int i = 0;
