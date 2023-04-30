@@ -16,7 +16,8 @@ struct int_desc {
 };
 
 // Interrupt Descriptor Table start at address 0x00000 with 256 entries.
-static struct int_desc *idt = 0x0;
+// The location of the table is handled by the linker script (kernel.lds).
+static struct int_desc idt[256] __attribute__((section(".idt")));
 
 // Code segment of the kernel.
 static uint16_t code_segment;
@@ -31,7 +32,7 @@ void interrupts_setup(uint16_t cs) {
     // Save the kernel code segment.
     code_segment = cs;
     // Clear the IDT.
-    memset((void *)idt, 0, 256);
+    memset(idt, 0, sizeof(idt));
     // Configure the PIC for the board configuration and the offset in the
     // interrupt table.
     pic_initialize(IDT_IRQ_OFFSET);

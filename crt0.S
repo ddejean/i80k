@@ -7,8 +7,6 @@
 // _kernel C symbol has to be declared as coming from another object file.
 .extern kernel
 
-// _start is the begining of the ROM, it has to be declared in a special way
-// to ensure the linker sees it.
 .global start
 start:
     // Set the stack segment and pointer at the end of the RAM.
