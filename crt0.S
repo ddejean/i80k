@@ -35,9 +35,7 @@ _1:
     mov %ax, %es
 
     // Call the C space
-    push %cs          // Provide the code segment to the C world.
     call kernel
-    add $2, %sp
 
     // Should never be reached, but in case hang forever.
     cli

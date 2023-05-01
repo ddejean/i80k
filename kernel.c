@@ -14,14 +14,17 @@
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
-void kernel(uint16_t cs) {
+void kernel(void) {
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize();
 
-    printk("Kernel booting...\r\n");
-    printk("  Code segment: %04X\r\n", cs);
-    printk("  Data segment: %04X\r\n", KERNEL_DS);
-    printk("  Stack segment: %04X\r\n", KERNEL_SS);
+    printk("Kernel loaded:\r\n");
+    printk("  .text: %04x[%04x:%04x], %d bytes\r\n", KERNEL_CS, _text_start,
+           _text_end, _text_end - _text_start);
+    printk("  .data: %04x[%04x:%04x], %d bytes\r\n", KERNEL_DS, _data_start,
+           _data_end, _data_end - _data_start);
+    printk("  .bss:  %04x[%04x:%04x], %d bytes\r\n", KERNEL_DS, _bss_start,
+           _bss_end, _bss_end - _bss_start);
 
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(_bss_end, (void*)KERNEL_STACK_LOW);
@@ -30,7 +33,7 @@ void kernel(uint16_t cs) {
     hw_alloc_init(1, 14);
 
     // Setup the interruption controller.
-    interrupts_setup(cs);
+    interrupts_setup(KERNEL_CS);
     sti();
 
     // Setup the UART as soon as possible.
