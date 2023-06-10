@@ -3,6 +3,9 @@
 #ifndef _STDINT_H_
 #define _STDINT_H_
 
+typedef long int int32_t;
+typedef unsigned long int uint32_t;
+
 typedef int int16_t;
 typedef unsigned int uint16_t;
 

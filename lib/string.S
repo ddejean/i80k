@@ -28,6 +28,20 @@ memset:
     // Restore base point and leave.
     ret
 
+// data_copy copies the .text section of the kernel to the future location of
+// the kernel in RAM.
+.global memcpy
+memcpy:
+    push %bp
+    mov  %sp, %bp
+    mov  4(%bp), %di
+    mov  6(%bp), %si
+    mov  8(%bp), %cx
+    cld
+    rep movsb
+    pop %bp
+    ret
+
 // size_t strlen(const char* s);
 .global strlen
 strlen:
