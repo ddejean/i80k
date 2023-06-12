@@ -16,7 +16,7 @@
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(void) {
     // Initialize the UART in polling mode to enable early printf.
-    uart_early_initialize();
+    uart_early_initialize(19200);
 
     printk("Kernel loaded:\r\n");
     printk("  .text: %04x[%04x:%04x], %d bytes\r\n", KERNEL_CS, _text_start,
@@ -37,7 +37,7 @@ void kernel(void) {
     sti();
 
     // Setup the UART as soon as possible.
-    uart_initialize();
+    uart_initialize(19200);
 
     // Initialize the clock system.
     clock_initialize();

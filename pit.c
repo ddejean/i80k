@@ -26,15 +26,27 @@
 #define MODE_BOTH_BYTES (3 << 4)
 #define MODE_COUNTER(t) (((uint8_t)t) << 6)
 
-void pit_set_alarm(timer_t timer, uint16_t counter) {
+static inline void pit_configure_counter(timer_t timer, uint8_t func,
+                                         uint16_t value) {
     uint8_t mode, port;
 
-    // Configure the counter to fire an alarm regularly.
-    mode = MODE_COUNTER(timer) | MODE_RATE_GEN | MODE_BOTH_BYTES | MODE_16BITS;
+    mode = MODE_COUNTER(timer) | func | MODE_BOTH_BYTES | MODE_16BITS;
     port = PIT_COUNTER(timer);
 
     // Configure the counter.
     outb(PIT_MODE, mode);
-    outb(port, counter & 0xff);
-    outb(port, counter >> 8);
+    outb(port, value & 0xff);
+    outb(port, value >> 8);
+}
+
+void pit_set_alarm(timer_t timer, uint16_t counter) {
+    // Configure the counter to fire an alarm regularly.
+    pit_configure_counter(timer, MODE_RATE_GEN, counter);
+}
+
+void pit_freq_gen(timer_t timer, uint32_t freq) {
+    uint16_t divider = (uint16_t)((uint32_t)PIT_FREQ / freq);
+    // Configure the counter to generate a square wave with a frequency of
+    // PIT_FREQ/divider.
+    pit_configure_counter(timer, MODE_SQUARE_WAVE, divider);
 }

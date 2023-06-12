@@ -9,6 +9,7 @@
 #include "cpu.h"
 #include "debug.h"
 #include "interrupts.h"
+#include "pit.h"
 #include "utils/ringbuffer.h"
 
 #define P8251A_CMD (PORT_UART | 1)
@@ -60,6 +61,7 @@ typedef enum uart_mode {
               // interrupts.
 } mode_t;
 
+// Operating mode of the UART driver.
 static mode_t mode = NONE;
 
 // Assembly interrupt handler for the UART.
@@ -85,10 +87,13 @@ static void p8251a_init(void) {
     outb(P8251A_CMD, 0);
     outb(P8251A_CMD, CMD_RESET);
     // Configuration mode.
-    outb(P8251A_CMD, MODE_ASYNC_64 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
+    outb(P8251A_CMD, MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
 }
 
-void uart_early_initialize(void) {
+void uart_early_initialize(uint16_t baud_rate) {
+    // Configure the PIT to generate a frequency that matches the desired baud
+    // rate.
+    pit_freq_gen(PIT_TIMER2, baud_rate);
     // Configure the UART controller.
     p8251a_init();
     // The driver is initialized in polling mode.
@@ -97,14 +102,17 @@ void uart_early_initialize(void) {
     outb(P8251A_CMD, CMD_TX_ENABLE);
 }
 
-void uart_initialize(void) {
+void uart_initialize(uint16_t baud_rate) {
     // Prepare the reception ring buffer.
     ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
     ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
-    // Configure the P8251A.
-    p8251a_init();
     // The driver is configured in buffered mode with interruptions.
     mode = BUFFERED;
+    // Configure the PIT to provide the frequency matching the desired baud
+    // rate.
+    pit_freq_gen(PIT_TIMER2, baud_rate);
+    // Configure the P8251A.
+    p8251a_init();
     // Hook up the interrupt handler.
     interrupts_handle(INT_IRQ4, uart_int_handler);
     // Unmask the UART interrupt.
@@ -114,9 +122,9 @@ void uart_initialize(void) {
 
     // Print only after the UART is correctly initialized.
     printk(
-        "UART: mode: buffered, baudrate: %lu, ring buffers size: %d bytes, "
+        "UART: mode: buffered, baudrate: %u, ring buffers size: %d bytes, "
         "using IRQ4\r\n",
-        PIT_FREQ / 64, RINGBUF_SIZE);
+        baud_rate, RINGBUF_SIZE);
 }
 
 void uart_handler(void) {

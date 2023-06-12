@@ -9,11 +9,11 @@
 // uart_early_initialize prepares the UART for sending using a polling method,
 // suitable for early boot when the interrupt controller and the memory
 // management are not ready yet.
-void uart_early_initialize(void);
+void uart_early_initialize(uint16_t baud_rate);
 
 // uart_initialize prepares the UART for sending and receiving using buffers
 // and interruptions.
-void uart_initialize(void);
+void uart_initialize(uint16_t baud_rate);
 
 // uart_read reads <count> bytes of data from the wire and puts them into
 // <buffer>.
