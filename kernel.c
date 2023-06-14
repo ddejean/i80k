@@ -7,9 +7,7 @@
 #include "cpu.h"
 #include "debug.h"
 #include "heap.h"
-#include "hwalloc.h"
 #include "interrupts.h"
-#include "scheduler.h"
 #include "uart.h"
 
 // Kernel C entry point.
@@ -28,9 +26,6 @@ void kernel(void) {
 
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(_bss_end, (void*)KERNEL_STACK_LOW);
-
-    // Prepare the memory pages allocator.
-    hw_alloc_init(1, 14);
 
     // Setup the interruption controller.
     interrupts_setup(KERNEL_CS);
