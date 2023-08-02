@@ -101,8 +101,8 @@ def _impl(ctx):
                 flag_groups = [
                     flag_group(
                         flags = [
-                            "-march={}".format(ctx.attr.cpu),
-                            "-mtune={}".format(ctx.attr.cpu),
+                            "-march=i{}".format(ctx.attr.cpu),
+                            "-mtune=i{}".format(ctx.attr.cpu),
                         ],
                     ),
                 ],
@@ -212,7 +212,7 @@ def _impl(ctx):
         toolchain_identifier = ctx.attr.toolchain_identifier,
         host_system_name = "local",
         target_system_name = "local",
-        target_cpu = ctx.attr.cpu,
+        target_cpu = "ia16",
         target_libc = "unknown",
         compiler = "gcc-ia16-6.3.0",
         abi_version = "unknown",

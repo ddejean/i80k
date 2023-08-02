@@ -1,4 +1,4 @@
 .vscode
 bazel-*
-toolchain/ia16-elf
+toolchains/ia16-elf
 
