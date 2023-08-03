@@ -1,17 +1,24 @@
-cc_binary(
-    name = "kernel.bin",
+filegroup(
+    name = "srcs",
     srcs = glob([
         "*.S",
         "*.h",
         "*.c",
     ]),
-    additional_linker_inputs = ["kernel.lds"],
-    includes = ["libc/include"],
+)
+
+cc_binary(
+    name = "kernel.bin",
+    srcs = [
+        ":srcs",
+    ],
+    additional_linker_inputs = ["//boards:lds"],
     linkopts = [
         "-nostdlib",
-        "-T $(rootpath :kernel.lds)",
+        "-T $(location //boards:lds)",
     ],
     deps = [
+        "//boards:board",
         "//lib:c",
         "//utils",
     ],

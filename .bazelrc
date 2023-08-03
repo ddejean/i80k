@@ -1,12 +1,10 @@
 # Use our custom-configured c++ toolchain for the target and standard toolchain
-
 # for the host
 
 build:8088-rev2_config --incompatible_enable_cc_toolchain_resolution
-build:8088-rev2_config --platforms=//platforms:none_8088
+build:8088-rev2_config --platforms=//platforms:8088-rev2
 
 # Set build configuration for the project
-
 build:8088-rev2_config --features=all_warnings
 build:8088-rev2_config --features=extra_warnings
 build:8088-rev2_config --features=treat_warnings_as_errors

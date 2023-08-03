@@ -42,8 +42,8 @@ filegroup(
 [toolchain(
     name = "{}_toolchain".format(cpu),
     target_compatible_with = [
-        "//platforms:ia16",
-        "//platforms:{}".format(cpu),
+        "//platforms/cpu:ia16",
+        "//platforms/cpu:{}".format(cpu),
     ],
     toolchain = "{}_cc_toolchain".format(cpu),
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
