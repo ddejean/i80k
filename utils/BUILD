@@ -10,5 +10,5 @@ cc_library(
         "ringbuffer.h",
     ],
     visibility = ["//visibility:public"],
-    deps = ["//lib:c"],
+    deps = ["//klib:klibc"],
 )

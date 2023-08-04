@@ -1,7 +1,7 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 cc_library(
-    name = "c",
+    name = "klibc",
     srcs = glob([
         "*.h",
         "*.c",

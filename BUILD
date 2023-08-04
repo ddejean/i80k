@@ -21,7 +21,7 @@ cc_binary(
     ],
     deps = [
         "//boards:board",
-        "//lib:c",
+        "//klib:klibc",
         "//utils",
     ],
 )
