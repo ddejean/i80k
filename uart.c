@@ -9,6 +9,7 @@
 #include "cpu.h"
 #include "debug.h"
 #include "interrupts.h"
+#include "irq.h"
 #include "pit.h"
 #include "utils/ringbuffer.h"
 

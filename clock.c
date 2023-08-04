@@ -8,6 +8,7 @@
 #include "cpu.h"
 #include "debug.h"
 #include "interrupts.h"
+#include "irq.h"
 #include "pit.h"
 
 // The clock counter defines how many periods the counter has to wait before

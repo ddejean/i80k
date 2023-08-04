@@ -8,11 +8,15 @@
 #include "debug.h"
 #include "heap.h"
 #include "interrupts.h"
+#include "irq.h"
 #include "uart.h"
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(void) {
+    // Prepares the interrupt system to allow the syscalls to be operational.
+    interrupts_setup(KERNEL_CS);
+
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize(19200);
 
@@ -28,7 +32,7 @@ void kernel(void) {
     heap_initialize(_bss_end, (void*)KERNEL_STACK_LOW);
 
     // Setup the interruption controller.
-    interrupts_setup(KERNEL_CS);
+    irq_setup();
     sti();
 
     // Setup the UART as soon as possible.
