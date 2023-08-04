@@ -29,6 +29,7 @@ uart_int_handler:
     pop %cx
     pop %bx
     pop %ax
+    iret
 
 .extern clock_handler
 .global clock_int_handler
