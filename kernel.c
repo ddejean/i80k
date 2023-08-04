@@ -9,6 +9,7 @@
 #include "heap.h"
 #include "interrupts.h"
 #include "irq.h"
+#include "syscall.h"
 #include "uart.h"
 
 // Kernel C entry point.
@@ -16,6 +17,7 @@
 void kernel(void) {
     // Prepares the interrupt system to allow the syscalls to be operational.
     interrupts_setup(KERNEL_CS);
+    syscall_setup();
 
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize(19200);
