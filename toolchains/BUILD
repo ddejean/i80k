@@ -1,3 +1,5 @@
+# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
 load(":ia16_toolchain_config.bzl", "ia16_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
@@ -39,6 +41,8 @@ filegroup(
     toolchain_identifier = "{}-cc_toolchain".format(cpu),
 ) for cpu, name in toolchains.items()]
 
+# Declare a toolchain with target compatibility for each defined cc_toolchain
+# and configuration generated above.
 [toolchain(
     name = "{}_toolchain".format(cpu),
     target_compatible_with = [

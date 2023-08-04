@@ -1,3 +1,5 @@
+# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
 filegroup(
     name = "srcs",
     srcs = glob([

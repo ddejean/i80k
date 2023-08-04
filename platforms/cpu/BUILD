@@ -1,3 +1,5 @@
+# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
 package(default_visibility = ["//visibility:public"])
 
 constraint_value(

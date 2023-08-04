@@ -1,3 +1,5 @@
+# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",
