@@ -195,7 +195,7 @@ def _impl(ctx):
 
     # Compiler includes.
     cxx_builtin_include_directories = [
-        "toolchain/ia16-elf/lib/gcc/ia16-elf/6.3.0/include",
+        "toolchains/ia16-elf/lib/gcc/ia16-elf/6.3.0/include",
     ]
 
     return cc_common.create_cc_toolchain_config_info(
