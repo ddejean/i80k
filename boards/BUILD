@@ -25,6 +25,9 @@ cc_library(
         ":8088-rev2": ["8088-rev2"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    # Required to ensure bootstrap and crt0 files are included even if their
+    # symbols are not referenced anywhere.
+    alwayslink = True,
 )
 
 filegroup(
