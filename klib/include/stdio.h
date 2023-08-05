@@ -12,5 +12,7 @@ int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
 int vprintf(const char* format, va_list va);
 int fctprintf(void (*out)(char character, void* arg), void* arg,
               const char* format, ...);
+int putchar(int c);
+int puts(const char* s);
 
 #endif  // _STDIO_H_

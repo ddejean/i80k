@@ -163,14 +163,10 @@ int uart_read(const char *buffer, const size_t count) {
         return -1;
     }
 
-    // Mask the interrupts to avoid race conditions on the ring buffer.
-    cli();
     // Read the data from the ring buffer.
     if (!ring_buffer_is_empty(&rx_ring)) {
         len = ring_buffer_dequeue_arr(&rx_ring, (char *)buffer, count);
     }
-    // Re-enable interrupts.
-    sti();
 
     return len;
 }
@@ -194,12 +190,8 @@ int uart_write(const char *buffer, const size_t count) {
             return count;
 
         case BUFFERED:
-            // Mask the interrupts to avoid race conditions on the ring buffer.
-            cli();
             // Put the data in the buffer.
             ring_buffer_queue_arr(&tx_ring, buffer, count);
-            // Re-enable interrupts now.
-            sti();
             // Enable TX.
             outb(P8251A_CMD, CMD_RX_ENABLE | CMD_TX_ENABLE);
             return count;

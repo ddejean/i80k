@@ -16,6 +16,3 @@ extern int brk(void *addr);
 // increased, then this value is a pointer to the start of the newly allocated
 // memory).  On error, (void *) -1 is returned.
 extern void *sbrk(intptr_t increment);
-
-// putchar() writes a char on the binded console.
-extern int putchar(int c);

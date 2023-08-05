@@ -8,12 +8,12 @@
 
 #include "uart.h"
 
-int putchar(int c) {
+int console_putchar(int c) {
     uart_write((char *)&c, sizeof(char));
     return 1;
 }
 
-int puts(const char *s) {
+int console_puts(const char *s) {
     size_t len;
     char c = '\n';
 
