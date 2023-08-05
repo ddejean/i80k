@@ -22,6 +22,7 @@ cc_binary(
     deps = [
         "//boards:board",
         "//klib:klibc",
+        "//third_party/async_xmodem",
         "//utils",
     ],
 )
