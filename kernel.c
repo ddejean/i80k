@@ -31,7 +31,7 @@ void kernel(void) {
            _bss_end, _bss_end - _bss_start);
 
     // Initiliaze the heap to alloc future allocations.
-    heap_initialize(_bss_end, (void*)KERNEL_STACK_LOW);
+    heap_initialize(_bss_end, (void *)KERNEL_STACK_LOW);
 
     // Setup the interruption controller.
     irq_setup();
