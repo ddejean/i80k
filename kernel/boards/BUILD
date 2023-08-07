@@ -14,11 +14,11 @@ config_setting(
 cc_library(
     name = "board",
     srcs = select({
-        ":8088-rev2": ["//boards/8088-rev2:srcs"],
+        ":8088-rev2": ["//kernel/boards/8088-rev2:srcs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     hdrs = select({
-        ":8088-rev2": ["//boards/8088-rev2:hdrs"],
+        ":8088-rev2": ["//kernel/boards/8088-rev2:hdrs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     includes = select({
@@ -33,7 +33,7 @@ cc_library(
 filegroup(
     name = "lds",
     srcs = select({
-        ":8088-rev2": ["//boards/8088-rev2:lds"],
+        ":8088-rev2": ["//kernel/boards/8088-rev2:lds"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )

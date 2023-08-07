@@ -15,7 +15,7 @@ The GCC IA16 toolchain is expected to be located in `toolchain/ia16-elf` directo
 Create the toolchain directory:
 
 ```
-$ cd toolchain/
+$ cd toolchains/
 $ mdkir ia16-elf
 ```
 
@@ -42,10 +42,10 @@ $ docker image rm build-gcc-ia16
 To build the kernel, install Bazel first, then run:
 
 ```
-bazel build --config=8088-rev2_config //:kernel.bin
+bazel build --config=8088-rev2_config //kernel:kernel.bin
 ```
 
-the resulting ROM image is then available in `bazel-bin/kernel.bin`.
+the resulting ROM image is then available in `bazel-bin/kernel/kernel.bin`.
 
 The custom Bazel toolchain declaration is located under `build/`, see [Bazel Tutorial: Configure C++ Toolchains](https://bazel.build/tutorials/ccp-toolchain-config) for more details.
 

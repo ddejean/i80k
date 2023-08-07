@@ -14,14 +14,14 @@ cc_binary(
     srcs = [
         ":srcs",
     ],
-    additional_linker_inputs = ["//boards:lds"],
+    additional_linker_inputs = ["//kernel/boards:lds"],
     linkopts = [
         "-nostdlib",
-        "-T $(location //boards:lds)",
+        "-T $(location //kernel/boards:lds)",
     ],
     deps = [
-        "//boards:board",
-        "//klib:klibc",
-        "//utils",
+        "//kernel/boards:board",
+        "//kernel/utils",
+        "//libc:c",
     ],
 )

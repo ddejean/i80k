@@ -7,17 +7,17 @@ filegroup(
         "*.h",
         "*.c",
     ]),
-    visibility = ["//boards:__pkg__"],
+    visibility = ["//kernel/boards:__pkg__"],
 )
 
 filegroup(
     name = "hdrs",
     srcs = ["board.h"],
-    visibility = ["//boards:__pkg__"],
+    visibility = ["//kernel/boards:__pkg__"],
 )
 
 filegroup(
     name = "lds",
     srcs = ["kernel.lds"],
-    visibility = ["//boards:__pkg__"],
+    visibility = ["//kernel/boards:__pkg__"],
 )
