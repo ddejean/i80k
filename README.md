@@ -49,6 +49,20 @@ the resulting ROM image is then available in `bazel-bin/kernel/kernel.bin`.
 
 The custom Bazel toolchain declaration is located under `build/`, see [Bazel Tutorial: Configure C++ Toolchains](https://bazel.build/tutorials/ccp-toolchain-config) for more details.
 
+### Run tests
+
+To build and run a test suite, run:
+
+```
+bazel test --cxxopt=-std=c++14 --test_output=all <target>
+```
+
+For instance:
+
+```
+bazel test --cxxopt=-std=c++14 --test_output=all //kernel/utils:utils_test
+```
+
 ### Board configuration
 
 The build is configured for a specific board using Bazel configurations, the parameters are located in `.bazelrc`. For now only one board is supported.

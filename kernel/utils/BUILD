@@ -10,5 +10,18 @@ cc_library(
         "ringbuffer.h",
     ],
     visibility = ["//visibility:public"],
-    deps = ["//libc:c"],
+    deps = select({
+        "@platforms//os:none": ["//libc:c"],
+        "@platforms//os:linux": [],
+    }),
+)
+
+cc_test(
+    name = "utils_test",
+    size = "small",
+    srcs = ["ringbuffer_test.cc"],
+    deps = [
+        ":utils",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
