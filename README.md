@@ -15,26 +15,26 @@ The GCC IA16 toolchain is expected to be located in `toolchain/ia16-elf` directo
 Create the toolchain directory:
 
 ```
-$ cd toolchains/
-$ mdkir ia16-elf
+cd toolchains/
+mdkir ia16-elf
 ```
 
 Create the container image:
 
 ```
-$ docker build -t build-gcc-ia16 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .
+docker build -t build-gcc-ia16 --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) .
 ```
 
 Build the toolchain (that's where you take a cup of coffee):
 
 ```
-$ docker run -v `pwd`/ia16-elf:/out build-gcc-ia16
+docker run -v `pwd`/ia16-elf:/out build-gcc-ia16
 ```
 
 Now the toolchain is available in `ia16-elf` directory, remove the docker image:
 
 ```
-$ docker image rm build-gcc-ia16
+docker image rm build-gcc-ia16
 ```
 
 ### Build the kernel
