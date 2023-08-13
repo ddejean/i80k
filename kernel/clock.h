@@ -16,8 +16,8 @@ enum wait {
 };
 typedef enum wait wait_t;
 
-// clock_wait stops the current thread/process until <delay> (in ms) is expired.
-// <type> defines the wait behavior.
+// clock_wait stops the current thread/process until <delay> (in ms) is
+// expired. <type> defines the wait behavior.
 int clock_wait(unsigned long delay, wait_t type);
 
 #endif  // _CLOCK_H_

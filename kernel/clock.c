@@ -20,18 +20,15 @@
 
 // Kernel ticks.
 unsigned long ticks;
-// Current kernel time.
-unsigned long clock;
 
 // Interruption request handler.
-extern void clock_int_handler(void);
+void clock_int_handler(void);
 
 void clock_initialize(void) {
     printk("Clock: frequency: %luHz, period: %dms, using IRQ0\r\n",
            (long unsigned int)PIT_FREQ, CLOCK_INC_MS);
 
     ticks = 0;
-    clock = 0;
     interrupts_handle(INT_IRQ0, clock_int_handler);
     pit_set_alarm(PIT_TIMER0, CLOCK_COUNTER);
     irq_enable(MASK_IRQ0);
@@ -40,16 +37,15 @@ void clock_initialize(void) {
 void clock_handler(void) {
     irq_ack();
     ticks++;
-    clock += CLOCK_INC_MS;
 }
 
 unsigned long clock_now(void) {
     unsigned long now;
     // Atomic clock read.
     cli();
-    now = clock;
+    now = ticks;
     sti();
-    return now;
+    return now * CLOCK_INC_MS;
 }
 
 int clock_wait(unsigned long delay, wait_t type) {
