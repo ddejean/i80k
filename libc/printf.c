@@ -36,6 +36,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 // Printf configuration
 #define PRINTF_DISABLE_SUPPORT_FLOAT
@@ -160,16 +161,6 @@ static inline void _out_fct(char character, void* buffer, size_t idx,
         ((out_fct_wrap_type*)buffer)
             ->fct(character, ((out_fct_wrap_type*)buffer)->arg);
     }
-}
-
-// internal secure strlen
-// \return The length of the string (excluding the terminating 0) limited by
-// 'maxsize'
-static inline unsigned int _strnlen_s(const char* str, size_t maxsize) {
-    const char* s;
-    for (s = str; *s && maxsize--; ++s)
-        ;
-    return (unsigned int)(s - str);
 }
 
 // internal test if char is a digit (0-9)
@@ -846,8 +837,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen,
 
             case 's': {
                 const char* p = va_arg(va, char*);
-                unsigned int l =
-                    _strnlen_s(p, precision ? precision : (size_t)-1);
+                unsigned int l = strnlen(p, precision ? precision : (size_t)-1);
                 // pre padding
                 if (flags & FLAGS_PRECISION) {
                     l = (l < precision ? l : precision);

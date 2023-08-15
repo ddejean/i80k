@@ -12,7 +12,11 @@ extern void *memset(void *dst, int value, size_t count);
 // memcpy copies <count> bytes from <src> to <dst>.
 extern void *memcpy(void *dst, void *src, size_t count);
 
-// size_t strlen(const char* s);
+// strnlen returns the number of chars pointed by s (final '\0' excluded).
 extern size_t strlen(const char *s);
+
+// strnlen returns the number of chars pointed by s (final '\0' excluded) within
+// 0 and <maxlen>.
+extern size_t strnlen(const char *s, size_t maxlen);
 
 #endif  // _STRINGS_H_
