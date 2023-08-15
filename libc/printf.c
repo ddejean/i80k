@@ -37,8 +37,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "kernel.h"
-
 // Printf configuration
 #define PRINTF_DISABLE_SUPPORT_FLOAT
 #define PRINTF_DISABLE_SUPPORT_EXPONENTIAL

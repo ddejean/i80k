@@ -7,8 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include "kernel.h"
+#include <unistd.h>
 
 // Heap, NULL at first and will grow with the allocations.
 char *heap;
