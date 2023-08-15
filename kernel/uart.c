@@ -71,13 +71,13 @@ extern void uart_int_handler(void);
 // Size of the ring buffer.
 #define RINGBUF_SIZE 256
 // Pre-allocated ring buffer for the reception.
-char rx_buf[RINGBUF_SIZE];
+static char rx_buf[RINGBUF_SIZE];
 // RX ring buffer instance.
-ring_buffer_t rx_ring;
+static ring_buffer_t rx_ring;
 // Pre-allocated ring buffer for emission.
-char tx_buf[RINGBUF_SIZE];
+static char tx_buf[RINGBUF_SIZE];
 // TX ring buffer instance.
-ring_buffer_t tx_ring;
+static ring_buffer_t tx_ring;
 
 static void p8251a_init(void) {
     // According to the datasheet, the chip might be in an unknown configuration
