@@ -1,6 +1,6 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 //
-// Contains the various of interrupt handlers called by the CPU from the IDT.
+// Contains the UART interrupt handler.
 
 .code16
 
@@ -14,17 +14,11 @@ uart_int_handler:
     push %bx
     push %cx
     push %dx
-    push %di
-    push %si
-    push %ds
-    push %es
-    // Call the C interrupt handler.
+    // Note: bp, si and di are saved by the callee anyway. When multiple segment
+    // will be used, we'll need to save ds, es and then set them to the kernel
+    // values.  Call the C interrupt handler.
     call uart_handler
     // Restore current activity state.
-    pop %es
-    pop %ds
-    pop %si
-    pop %di
     pop %dx
     pop %cx
     pop %bx
