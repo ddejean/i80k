@@ -41,8 +41,8 @@
 #define CMD_TX_ENABLE 1
 #define CMD_RX_DISABLE 0
 #define CMD_RX_ENABLE (1 << 2)
+#define CMD_FORCE_RTS (1 << 5)
 #define CMD_RESET (1 << 6)
-#define CMD_FORCE_RTS (1 << 7)
 
 // P8251A status register.
 #define STATUS_TXRDY 1
@@ -119,7 +119,7 @@ void uart_initialize(uint16_t baud_rate) {
     // Unmask the UART interrupt.
     irq_enable(MASK_IRQ4);
     // Enable RX only (TX will be enabled when bytes are ready to send).
-    outb(P8251A_CMD, CMD_RX_ENABLE);
+    outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS);
 
     // Print only after the UART is correctly initialized.
     printk(
@@ -148,7 +148,7 @@ void uart_handler(void) {
             ring_buffer_dequeue(&tx_ring, (char *)&byte);
             outb(P8251A_DATA, byte);
         } else {
-            outb(P8251A_CMD, CMD_RX_ENABLE);
+            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS);
         }
     }
 
@@ -193,7 +193,7 @@ int uart_write(const char *buffer, const size_t count) {
             // Put the data in the buffer.
             ring_buffer_queue_arr(&tx_ring, buffer, count);
             // Enable TX.
-            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_TX_ENABLE);
+            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS | CMD_TX_ENABLE);
             return count;
 
         case NONE:

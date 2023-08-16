@@ -1,6 +1,7 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "board.h"
 #include "clock.h"
@@ -44,9 +45,14 @@ void kernel(void) {
     clock_initialize();
 
     // Kernel idle task.
-    int i = 0;
     while (1) {
-        printk("%d\r", i++);
-        clock_wait(1000, POLL_WAIT);
+        int c;
+
+        c = getchar();
+        if (c < 0) {
+            // clock_wait(100, POLL_WAIT);
+        } else {
+            printk("%c", (char)c);
+        }
     }
 }

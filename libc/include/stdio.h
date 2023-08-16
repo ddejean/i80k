@@ -14,5 +14,6 @@ int fctprintf(void (*out)(char character, void* arg), void* arg,
               const char* format, ...);
 int putchar(int c);
 int puts(const char* s);
+int getchar(void);
 
 #endif  // _STDIO_H_

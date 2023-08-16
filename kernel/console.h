@@ -9,4 +9,8 @@ int console_putchar(int c);
 // console_puts() writes <s> onto the binded console and add a carriage return.
 int console_puts(const char *s);
 
+// console_getchar() returns the first available char for input on the binded
+// console.
+int console_getchar(void);
+
 #endif  // _CONSOLE_H_

@@ -19,3 +19,15 @@ int puts(const char* s) {
         : "ah");
     return 1;
 }
+
+int getchar(void) {
+    int c;
+    __asm__ __volatile__(
+        "mov $0x01, %%ah\n"
+        "int $0x21\n"
+        "mov %%ax, %0\n"
+        : "=r"(c)
+        :  // no input
+        : "ax");
+    return c;
+}

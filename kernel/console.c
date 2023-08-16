@@ -22,3 +22,14 @@ int console_puts(const char *s) {
     uart_write(&c, sizeof(c));
     return ++len;
 }
+
+int console_getchar(void) {
+    char c;
+    int len;
+
+    len = uart_read(&c, sizeof(c));
+    if (len == 1) {
+        return c;
+    }
+    return -1;
+}
