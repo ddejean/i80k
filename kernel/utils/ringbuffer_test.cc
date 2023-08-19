@@ -25,13 +25,14 @@ class RingBufferTest : public ::testing::Test {
 // Demonstrate some basic assertions.
 TEST_F(RingBufferTest, EmptyOrFull) {
     EXPECT_EQ(1, ring_buffer_is_empty(&rb));
+    EXPECT_EQ(0, ring_buffer_num_items(&rb));
 
     // Fill the buffer and check it's full.
     for (long unsigned i = 0; i < rb_size(); i++) {
         ring_buffer_queue(&rb, 'a');
     }
     EXPECT_EQ(1, ring_buffer_is_full(&rb));
-    EXPECT_EQ(sizeof(buf) - 1, ring_buffer_num_items(&rb));
+    EXPECT_EQ(rb_size(), ring_buffer_num_items(&rb));
 
     // Empty the buffer and check values.
     for (long unsigned i = 0; i < rb_size(); i++) {
@@ -40,6 +41,7 @@ TEST_F(RingBufferTest, EmptyOrFull) {
         EXPECT_EQ('a', c);
     }
     EXPECT_EQ(1, ring_buffer_is_empty(&rb));
+    EXPECT_EQ(0, ring_buffer_num_items(&rb));
 }
 
 TEST_F(RingBufferTest, SingleReadAndWrite) {
@@ -47,6 +49,7 @@ TEST_F(RingBufferTest, SingleReadAndWrite) {
     ring_buffer_queue(&rb, 'b');
     ring_buffer_queue(&rb, 'c');
     ring_buffer_queue(&rb, 'd');
+    EXPECT_EQ(4, ring_buffer_num_items(&rb));
     EXPECT_EQ(0, ring_buffer_is_full(&rb));
 
     char c = 0;
@@ -58,11 +61,14 @@ TEST_F(RingBufferTest, SingleReadAndWrite) {
     EXPECT_EQ('c', c);
     EXPECT_EQ(1, ring_buffer_dequeue(&rb, &c));
     EXPECT_EQ('d', c);
+    EXPECT_EQ(0, ring_buffer_num_items(&rb));
+    EXPECT_EQ(1, ring_buffer_is_empty(&rb));
 }
 
 TEST_F(RingBufferTest, ArrayReadAndWrite) {
     const char *input = "abcd";
     ring_buffer_queue_arr(&rb, input, strlen(input));
+    EXPECT_EQ(4, ring_buffer_num_items(&rb));
     EXPECT_EQ(0, ring_buffer_is_full(&rb));
 
     char result[4];
@@ -76,6 +82,7 @@ TEST_F(RingBufferTest, WriteArrayWithOverflow) {
     // Write a string bigger than the buffer.
     const char *input = "abcdefghijklmnopqrst";
     ring_buffer_queue_arr(&rb, input, strlen(input));
+    EXPECT_EQ(rb_size(), ring_buffer_num_items(&rb));
     EXPECT_EQ(1, ring_buffer_is_full(&rb));
 
     // Check that all the last characters of the string are in the buffer.
@@ -83,4 +90,5 @@ TEST_F(RingBufferTest, WriteArrayWithOverflow) {
     EXPECT_EQ(rb_size(), ring_buffer_dequeue_arr(&rb, result, sizeof(result)));
     EXPECT_EQ(0, strncmp("fghijklmnopqrst", result, rb_size()));
     EXPECT_EQ(1, ring_buffer_is_empty(&rb));
+    EXPECT_EQ(0, ring_buffer_num_items(&rb));
 }
