@@ -138,14 +138,11 @@ void uart_handler(void) {
         byte = inb(P8251A_DATA);
         // Queue the byte into the reception buffer if there's any space left,
         // or drop it.
-        if (!ring_buffer_is_full(&rx_ring)) {
-            ring_buffer_queue(&rx_ring, byte);
-        }
+        ring_buffer_queue(&rx_ring, byte);
     }
 
     if (status & STATUS_TXRDY) {
-        if (!ring_buffer_is_empty(&tx_ring)) {
-            ring_buffer_dequeue(&tx_ring, (char *)&byte);
+        if (ring_buffer_dequeue(&tx_ring, (char *)&byte)) {
             outb(P8251A_DATA, byte);
         } else {
             outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS);
