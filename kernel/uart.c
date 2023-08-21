@@ -78,6 +78,8 @@ static ring_buffer_t rx_ring;
 static char tx_buf[RINGBUF_SIZE];
 // TX ring buffer instance.
 static ring_buffer_t tx_ring;
+// Current commands in the UART.
+static uint8_t cmd;
 
 static void p8251a_init(void) {
     // According to the datasheet, the chip might be in an unknown configuration
@@ -91,6 +93,11 @@ static void p8251a_init(void) {
     outb(P8251A_CMD, MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
 }
 
+static inline void p8251a_cmd(uint8_t command) {
+    cmd = command;
+    outb(P8251A_CMD, cmd);
+}
+
 void uart_early_initialize(uint16_t baud_rate) {
     // Configure the PIT to generate a frequency that matches the desired baud
     // rate.
@@ -100,7 +107,7 @@ void uart_early_initialize(uint16_t baud_rate) {
     // The driver is initialized in polling mode.
     mode = POLLED;
     // Only enable transmission.
-    outb(P8251A_CMD, CMD_TX_ENABLE);
+    p8251a_cmd(CMD_TX_ENABLE);
 }
 
 void uart_initialize(uint16_t baud_rate) {
@@ -119,7 +126,7 @@ void uart_initialize(uint16_t baud_rate) {
     // Unmask the UART interrupt.
     irq_enable(MASK_IRQ4);
     // Enable RX only (TX will be enabled when bytes are ready to send).
-    outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS);
+    p8251a_cmd(CMD_RX_ENABLE | CMD_FORCE_RTS);
 
     // Print only after the UART is correctly initialized.
     printk(
@@ -134,6 +141,9 @@ void uart_handler(void) {
     // Get the status of the UART controller.
     status = inb(P8251A_CMD);
 
+    // Disable RTS so that we won't receive bytes while handling the interrupt.
+    p8251a_cmd(cmd & ~CMD_FORCE_RTS);
+
     if (status & STATUS_RXRDY) {
         byte = inb(P8251A_DATA);
         // Queue the byte into the reception buffer if there's any space left,
@@ -145,10 +155,15 @@ void uart_handler(void) {
         if (ring_buffer_dequeue(&tx_ring, (char *)&byte)) {
             outb(P8251A_DATA, byte);
         } else {
-            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS);
+            // No more data to send, disable TX.
+            cmd = CMD_RX_ENABLE;
         }
     }
 
+    // Re-enable RTS so that we can now receive bytes.
+    p8251a_cmd(cmd | CMD_FORCE_RTS);
+
+    // Acknoledge the interrupt controller.
     irq_ack();
 }
 
@@ -190,7 +205,7 @@ int uart_write(const char *buffer, const size_t count) {
             // Put the data in the buffer.
             ring_buffer_queue_arr(&tx_ring, buffer, count);
             // Enable TX.
-            outb(P8251A_CMD, CMD_RX_ENABLE | CMD_FORCE_RTS | CMD_TX_ENABLE);
+            p8251a_cmd(cmd | CMD_TX_ENABLE);
             return count;
 
         case NONE:
