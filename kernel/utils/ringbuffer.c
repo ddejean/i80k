@@ -95,16 +95,16 @@ uint8_t ring_buffer_peek(ring_buffer_t *buffer, char *data, size_t index) {
     return 1;
 }
 
-uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
+inline uint8_t ring_buffer_is_empty(ring_buffer_t *buffer) {
     return (buffer->head_index == buffer->tail_index);
 }
 
-uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
+inline uint8_t ring_buffer_is_full(ring_buffer_t *buffer) {
     return ((buffer->head_index - buffer->tail_index) &
             RING_BUFFER_MASK(buffer)) == RING_BUFFER_MASK(buffer);
 }
 
-size_t ring_buffer_num_items(ring_buffer_t *buffer) {
+inline size_t ring_buffer_num_items(ring_buffer_t *buffer) {
     return ((buffer->head_index - buffer->tail_index) &
             RING_BUFFER_MASK(buffer));
 }
