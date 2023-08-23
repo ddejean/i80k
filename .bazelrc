@@ -9,4 +9,4 @@ build:8088-rev2_config --features=all_warnings
 build:8088-rev2_config --features=extra_warnings
 build:8088-rev2_config --features=treat_warnings_as_errors
 build:8088-rev2_config --features=tiny_memory_model
-build:8088-rev2_config --copt="-O1"
+build:8088-rev2_config --copt="-O2"

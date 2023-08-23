@@ -18,13 +18,13 @@
 
 // outb emits <data> on io address <port>.
 static inline void outb(uint16_t port, uint8_t data) {
-    __asm__ __volatile__("outb %1, %0" : : "dN"(port), "a"(data));
+    __asm__ __volatile__("outb %1, %0" : : "dN"(port), "Ral"(data));
 }
 
 // inb retries a byte from io address <port>.
 static inline uint8_t inb(uint16_t port) {
     uint8_t data;
-    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "dN"(port));
+    __asm__ __volatile__("inb %1, %0" : "=Ral"(data) : "dN"(port));
     return data;
 }
 
