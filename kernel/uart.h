@@ -19,6 +19,9 @@ void uart_initialize(uint16_t baud_rate);
 // <buffer>.
 int uart_read(const char *buffer, const size_t count);
 
+// uart_putchar sends <c> on the wire.
+int uart_putchar(const char c);
+
 // uart_write sends <count> bytes from <buffer> onto the wire.
 int uart_write(const char *buffer, const size_t count);
 

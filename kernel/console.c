@@ -8,10 +8,7 @@
 
 #include "uart.h"
 
-int console_putchar(int c) {
-    uart_write((char *)&c, sizeof(char));
-    return 1;
-}
+int console_putchar(int c) { return uart_putchar((char)c); }
 
 int console_puts(const char *s) {
     size_t len;

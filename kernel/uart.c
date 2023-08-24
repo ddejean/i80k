@@ -193,6 +193,26 @@ static inline void uart_write_char(const char c) {
     outb(P8251A_DATA, c);
 }
 
+int uart_putchar(const char c) {
+    switch (mode) {
+        case POLLED:
+            uart_write_char(c);
+            return 1;
+
+        case BUFFERED:
+            // Put the data in the buffer.
+            ring_buffer_queue(&tx_ring, c);
+            // Enable TX.
+            p8251a_cmd(cmd | CMD_TX_ENABLE);
+            return 1;
+
+        case NONE:
+        default:
+            // Driver is not initialized, nothing to do.
+            return 0;
+    }
+}
+
 int uart_write(const char *buffer, const size_t count) {
     switch (mode) {
         case POLLED:
