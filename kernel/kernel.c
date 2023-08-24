@@ -6,7 +6,6 @@
 #include "board.h"
 #include "clock.h"
 #include "cpu.h"
-#include "debug.h"
 #include "heap.h"
 #include "interrupts.h"
 #include "irq.h"
@@ -23,13 +22,13 @@ void kernel(void) {
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize(19200);
 
-    printk("Kernel loaded:\n");
-    printk("  .text: %04x[%04x:%04x], %d bytes\n", KERNEL_CS, _text_start,
+    printf("Kernel loaded:\n");
+    printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
            _text_end, _text_end - _text_start);
-    printk("  .data: %04x[%04x:%04x], %d bytes\n", KERNEL_DS, _data_start,
+    printf("  .data: %04x[%p:%p], %d bytes\n", KERNEL_DS, _data_start,
            _data_end, _data_end - _data_start);
-    printk("  .bss:  %04x[%04x:%04x], %d bytes\n", KERNEL_DS, _bss_start,
-           _bss_end, _bss_end - _bss_start);
+    printf("  .bss:  %04x[%p:%p], %d bytes\n", KERNEL_DS, _bss_start, _bss_end,
+           _bss_end - _bss_start);
 
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(_bss_end, (void *)KERNEL_STACK_LOW);
@@ -52,7 +51,7 @@ void kernel(void) {
         if (c < 0) {
             // clock_wait(100, POLL_WAIT);
         } else {
-            printk("%c", (char)c);
+            printf("%c", (char)c);
         }
     }
 }

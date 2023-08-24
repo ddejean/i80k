@@ -17,7 +17,4 @@
             ;                               \
     } while (0)
 
-// printk puts on message on the kernel console.
-int printk(const char* format, ...);
-
 #endif  // _DEBUG_H_

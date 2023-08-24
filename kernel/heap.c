@@ -4,8 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include "debug.h"
+#include <stdio.h>
 
 // Base address of the kernel heap.
 void *heap_base;
@@ -17,7 +16,7 @@ void *heap_max;
 void *heap;
 
 void heap_initialize(void *start, void *end) {
-    printk("Heap: [%p:%p], %u bytes\n", start, end, end - start);
+    printf("Heap: [%p:%p], %u bytes\n", start, end, end - start);
 
     heap_base = start;
     heap_max = end;
