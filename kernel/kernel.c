@@ -23,12 +23,12 @@ void kernel(void) {
     // Initialize the UART in polling mode to enable early printf.
     uart_early_initialize(19200);
 
-    printk("Kernel loaded:\r\n");
-    printk("  .text: %04x[%04x:%04x], %d bytes\r\n", KERNEL_CS, _text_start,
+    printk("Kernel loaded:\n");
+    printk("  .text: %04x[%04x:%04x], %d bytes\n", KERNEL_CS, _text_start,
            _text_end, _text_end - _text_start);
-    printk("  .data: %04x[%04x:%04x], %d bytes\r\n", KERNEL_DS, _data_start,
+    printk("  .data: %04x[%04x:%04x], %d bytes\n", KERNEL_DS, _data_start,
            _data_end, _data_end - _data_start);
-    printk("  .bss:  %04x[%04x:%04x], %d bytes\r\n", KERNEL_DS, _bss_start,
+    printk("  .bss:  %04x[%04x:%04x], %d bytes\n", KERNEL_DS, _bss_start,
            _bss_end, _bss_end - _bss_start);
 
     // Initiliaze the heap to alloc future allocations.

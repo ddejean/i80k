@@ -8,16 +8,21 @@
 
 #include "uart.h"
 
-int console_putchar(int c) { return uart_putchar((char)c); }
+int console_putchar(int c) {
+    if ((char)c == '\n') {
+        uart_putchar('\r');
+    }
+    return uart_putchar((char)c);
+}
 
 int console_puts(const char *s) {
     size_t len;
-    char c = '\n';
+    const char br[2] = {'\r', '\n'};
 
     len = strlen(s);
     uart_write(s, len);
-    uart_write(&c, sizeof(c));
-    return ++len;
+    uart_write(br, sizeof(br));
+    return len + sizeof(br);
 }
 
 int console_getchar(void) {

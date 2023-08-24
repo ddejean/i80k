@@ -131,7 +131,7 @@ void uart_initialize(uint16_t baud_rate) {
     // Print only after the UART is correctly initialized.
     printk(
         "UART: mode: buffered, baudrate: %u, ring buffers size: %d bytes, "
-        "using IRQ4\r\n",
+        "using IRQ4\n",
         baud_rate, RINGBUF_SIZE);
 }
 

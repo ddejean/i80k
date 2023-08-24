@@ -17,7 +17,7 @@ void *heap_max;
 void *heap;
 
 void heap_initialize(void *start, void *end) {
-    printk("Heap: [%p:%p], %u bytes\r\n", start, end, end - start);
+    printk("Heap: [%p:%p], %u bytes\n", start, end, end - start);
 
     heap_base = start;
     heap_max = end;
