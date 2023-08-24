@@ -10,8 +10,11 @@ memset:
     push    %bp
     mov     %sp, %bp
     // Save nonscratch registers.
+    push    %es
     push    %di
-    push    %cx
+    // Prepare the %es register.
+    mov     %ds,    %di
+    mov     %di,    %es
     // Set destination, value and count.
     mov     4(%bp), %di
     mov     6(%bp), %ax
@@ -19,11 +22,11 @@ memset:
     // Trigger the copy.
     cld
     rep stosb
-    // Restore registers.
-    pop     %cx
-    pop     %dx
     // Set the return value.
     mov     4(%bp), %ax
+    // Restore registers.
+    pop     %di
+    pop     %es
     pop     %bp
     // Restore base point and leave.
     ret
@@ -34,11 +37,23 @@ memset:
 memcpy:
     push %bp
     mov  %sp, %bp
+    // Save non scratch registers.
+    push %di
+    push %si
+    push %es
+    // Prepare the %es segment register.
+    mov  %ds, %di
+    mov  %di, %es
+    // Copy
     mov  4(%bp), %di
     mov  6(%bp), %si
     mov  8(%bp), %cx
     cld
     rep movsb
+    // Restore the context.
+    pop %es
+    pop %si
+    pop %di
     pop %bp
     ret
 
@@ -48,16 +63,25 @@ strlen:
     push    %bp
     mov     %sp, %bp
     push    %di
-    // Search for '\0'
-    mov     4(%bp), %dx
-    mov     %dx, %di
-    mov     $0xffff, %cx
-    xor     %ax, %ax
-    repnz   scasb
-    // Get the distance between the begining of the string and the '\0'.
-    sub     %dx, %di
-    lea     -1(%di), %ax
+    push    %es
+    // Put the pointer in destination index.
+    mov     4(%bp), %bx
+    mov     %bx,    %di
+    // Load the data segment into %es.
+	mov     %ds,    %ax
+	mov     %ax,    %es
+    // Keep the origin for later.
+	mov 	%di,	%bx
+    // Search for '\0'.
+	xorb	%al,	%al
+	mov     $-1,    %cx
+	repne   scasb
+    // Compute length.
+	mov     %di,    %ax
+	sub 	%bx,	%ax
+	dec     %ax
     // Restore state and return
+    pop     %es
     pop     %di
     pop     %bp
     ret
@@ -68,16 +92,23 @@ strnlen:
     push    %bp
     mov     %sp, %bp
     push    %di
-    // Search for '\0'
-    mov     4(%bp), %dx
-    mov     %dx, %di
-    mov     6(%bp), %cx
-    xor     %ax, %ax
-    repnz   scasb
-    // Get the distance between the begining of the string and the '\0'.
-    sub     %dx, %di
-    lea     -1(%di), %ax
+    push    %es
+    // Put the pointer in destination index.
+    mov     4(%bp), %bx
+    mov     %bx,    %di
+    // Load the data segment into %es.
+	mov     %ds,    %ax
+	mov     %ax,    %es
+    // Search for '\0'.
+	xorb	%al,	%al
+	mov     6(%bp), %cx
+	repne   scasb
+    // Compute length.
+	mov     %di,    %ax
+	sub 	%bx,	%ax
+	dec     %ax
     // Restore state and return
+    pop     %es
     pop     %di
     pop     %bp
     ret

@@ -16,7 +16,7 @@ int console_putchar(int c) {
 }
 
 int console_puts(const char *s) {
-    size_t len;
+    int len = 0;
     const char br[2] = {'\r', '\n'};
 
     len = strlen(s);
