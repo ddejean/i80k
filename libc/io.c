@@ -11,13 +11,15 @@ int putchar(int c) {
 }
 
 int puts(const char* s) {
+    int ret;
     __asm__ __volatile__(
         "mov $0x09, %%ah\n"
-        "int $0x21"
-        :  // no output
+        "int $0x21\n"
+        "mov %%ax, %0\n"
+        : "=r"(ret)
         : "d"(s)
         : "ah");
-    return 1;
+    return ret;
 }
 
 int getchar(void) {
