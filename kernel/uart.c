@@ -69,7 +69,7 @@ static mode_t mode = NONE;
 extern void uart_int_handler(void);
 
 // Size of the ring buffer.
-#define RINGBUF_SIZE 256
+#define RINGBUF_SIZE 512
 // Pre-allocated ring buffer for the reception.
 static char rx_buf[RINGBUF_SIZE];
 // RX ring buffer instance.
@@ -138,11 +138,11 @@ void uart_initialize(uint16_t baud_rate) {
 void uart_handler(void) {
     uint8_t status, byte;
 
-    // Get the status of the UART controller.
-    status = inb(P8251A_CMD);
-
     // Disable RTS so that we won't receive bytes while handling the interrupt.
     p8251a_cmd(cmd & ~CMD_FORCE_RTS);
+
+    // Get the status of the UART controller.
+    status = inb(P8251A_CMD);
 
     if (status & STATUS_RXRDY) {
         byte = inb(P8251A_DATA);
