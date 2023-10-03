@@ -62,6 +62,15 @@ SECTIONS {
     } > ram
 
     /*
+     * Dummy section used to fill the void in the ROM between the end of .bss
+     * and the bootstrap code.
+     */
+    .fill : {
+        BYTE(0xFF)
+        . = ORIGIN(rom) + LENGTH(rom);
+      } > rom =0xff
+
+    /*
      * The bootstrap code (first code run by the CPU) needs to be located at
      * physical address F000:FFF0, thus must be placed at offset 0x7FF0 in the
      * ROM binary.
