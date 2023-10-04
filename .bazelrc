@@ -1,12 +1,20 @@
 # Use our custom-configured c++ toolchain for the target and standard toolchain
 # for the host
 
+# Board revision 2 build configuration.
 build:8088-rev2_config --incompatible_enable_cc_toolchain_resolution
 build:8088-rev2_config --platforms=//platforms:8088-rev2
-
-# Set build configuration for the project
 build:8088-rev2_config --features=all_warnings
 build:8088-rev2_config --features=extra_warnings
 build:8088-rev2_config --features=treat_warnings_as_errors
 build:8088-rev2_config --features=tiny_memory_model
 build:8088-rev2_config --copt="-O2"
+
+# Board revision 3 build configuration.
+build:8088-rev3_config --incompatible_enable_cc_toolchain_resolution
+build:8088-rev3_config --platforms=//platforms:8088-rev3
+build:8088-rev3_config --features=all_warnings
+build:8088-rev3_config --features=extra_warnings
+build:8088-rev3_config --features=treat_warnings_as_errors
+build:8088-rev3_config --features=tiny_memory_model
+build:8088-rev3_config --copt="-O2"

@@ -11,18 +11,29 @@ config_setting(
     ],
 )
 
+config_setting(
+    name = "8088-rev3",
+    constraint_values = [
+        "//platforms/cpu:8088",
+        "//platforms/board:rev3",
+    ],
+)
+
 cc_library(
     name = "board",
     srcs = select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:srcs"],
+        ":8088-rev3": ["//kernel/boards/8088-rev3:srcs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     hdrs = select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:hdrs"],
+        ":8088-rev3": ["//kernel/boards/8088-rev3:hdrs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     includes = select({
         ":8088-rev2": ["8088-rev2"],
+        ":8088-rev3": ["8088-rev3"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     # Required to ensure bootstrap and crt0 files are included even if their
@@ -34,6 +45,7 @@ filegroup(
     name = "lds",
     srcs = select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:lds"],
+        ":8088-rev3": ["//kernel/boards/8088-rev3:lds"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )

@@ -8,3 +8,8 @@ constraint_value(
     name = "rev2",
     constraint_setting = ":board",
 )
+
+constraint_value(
+    name = "rev3",
+    constraint_setting = ":board",
+)
