@@ -10,7 +10,7 @@ The kernel uses [Bazel](https://bazel.build) and a IA16 version of GCC compiler 
 
 ### Build the toolchain
 
-The GCC IA16 toolchain is expected to be located in `toolchain/ia16-elf` directory. The instructions below tell how to build it from scratch using the a Docker container.
+The GCC IA16 toolchain is expected to be located in `toolchains/ia16-elf` directory. The instructions below tell how to build it from scratch using the a Docker container.
 
 Create the toolchain directory:
 
@@ -42,12 +42,12 @@ docker image rm build-gcc-ia16
 To build the kernel, install Bazel first, then run:
 
 ```
-bazel build --config=8088-rev2_config //kernel:kernel.bin
+bazel build --config=8088-rev2 //kernel:kernel.bin
 ```
 
-the resulting ROM image is then available in `bazel-bin/kernel/kernel.bin`.
+the resulting ROM image is then available in `bazel-bin/kernel/kernel.bin`. The `--config=` flags helps selecting the right build configuration for the board you want to target. Valid configurations are `8088-rev2` or `8088-rev3`.
 
-The custom Bazel toolchain declaration is located under `build/`, see [Bazel Tutorial: Configure C++ Toolchains](https://bazel.build/tutorials/ccp-toolchain-config) for more details.
+The custom Bazel toolchain declaration is located under `toolchains/`, see [Bazel Tutorial: Configure C++ Toolchains](https://bazel.build/tutorials/ccp-toolchain-config) for more details.
 
 ### Run tests
 
