@@ -1,6 +1,6 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-#include "uart.h"
+#include "p8251.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -54,17 +54,6 @@
 #define STATUS_SYNDET (1 << 6)
 #define STATUS_DATA_SET_RDY (1 << 7)
 
-// Operating mode of the UART.
-typedef enum uart_mode {
-    NONE,     // UART driver is uninitialized
-    POLLED,   // UART driver is initialized to work in polling mode.
-    BUFFERED  // UART driver is initialized to working with buffers and
-              // interrupts.
-} mode_t;
-
-// Operating mode of the UART driver.
-static mode_t mode = NONE;
-
 // Assembly interrupt handler for the UART.
 extern void uart_int_handler(void);
 
@@ -98,24 +87,10 @@ static inline void p8251a_cmd(uint8_t command) {
     outb(P8251A_CMD, cmd);
 }
 
-void uart_early_initialize(uint16_t baud_rate) {
-    // Configure the PIT to generate a frequency that matches the desired baud
-    // rate.
-    pit_freq_gen(PIT_TIMER2, baud_rate);
-    // Configure the UART controller.
-    p8251a_init();
-    // The driver is initialized in polling mode.
-    mode = POLLED;
-    // Only enable transmission.
-    p8251a_cmd(CMD_TX_ENABLE);
-}
-
-void uart_initialize(uint16_t baud_rate) {
+void p8251_initialize(uint16_t baud_rate) {
     // Prepare the reception ring buffer.
     ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
     ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
-    // The driver is configured in buffered mode with interruptions.
-    mode = BUFFERED;
     // Configure the PIT to provide the frequency matching the desired baud
     // rate.
     pit_freq_gen(PIT_TIMER2, baud_rate);
@@ -130,7 +105,7 @@ void uart_initialize(uint16_t baud_rate) {
 
     // Print only after the UART is correctly initialized.
     printf(
-        "UART: mode: buffered, baudrate: %u, ring buffers size: %d bytes, "
+        "UART: baudrate: %u, ring buffers size: %d bytes, "
         "using IRQ4\n",
         baud_rate, RINGBUF_SIZE);
 }
@@ -167,13 +142,8 @@ void uart_handler(void) {
     irq_ack();
 }
 
-int uart_read(const char *buffer, const size_t count) {
+int p8251_read(const char *buffer, const size_t count) {
     size_t len = 0;
-
-    if (mode != BUFFERED) {
-        // Reception is disabled when not in buffered mode.
-        return -1;
-    }
 
     // Read the data from the ring buffer.
     if (!ring_buffer_is_empty(&rx_ring)) {
@@ -183,54 +153,18 @@ int uart_read(const char *buffer, const size_t count) {
     return len;
 }
 
-static inline void uart_write_char(const char c) {
-    char status;
-    // Wait for the queue to be empty before sending a byte.
-    do {
-        status = inb(P8251A_CMD);
-    } while (!(status & STATUS_TXRDY));
-    // Send the byte of data.
-    outb(P8251A_DATA, c);
+int p8251_putchar(const char c) {
+    // Put the data in the buffer.
+    ring_buffer_queue(&tx_ring, c);
+    // Enable TX.
+    p8251a_cmd(cmd | CMD_TX_ENABLE);
+    return c;
 }
 
-int uart_putchar(const char c) {
-    switch (mode) {
-        case POLLED:
-            uart_write_char(c);
-            return 1;
-
-        case BUFFERED:
-            // Put the data in the buffer.
-            ring_buffer_queue(&tx_ring, c);
-            // Enable TX.
-            p8251a_cmd(cmd | CMD_TX_ENABLE);
-            return 1;
-
-        case NONE:
-        default:
-            // Driver is not initialized, nothing to do.
-            return 0;
-    }
-}
-
-int uart_write(const char *buffer, const size_t count) {
-    switch (mode) {
-        case POLLED:
-            for (size_t i = 0; i < count; i++) {
-                uart_write_char(buffer[i]);
-            }
-            return count;
-
-        case BUFFERED:
-            // Put the data in the buffer.
-            ring_buffer_queue_arr(&tx_ring, buffer, count);
-            // Enable TX.
-            p8251a_cmd(cmd | CMD_TX_ENABLE);
-            return count;
-
-        case NONE:
-        default:
-            // Driver is not initialized, nothing to do.
-            return -1;
-    }
+int p8251_write(const char *buffer, const size_t count) {
+    // Put the data in the buffer.
+    ring_buffer_queue_arr(&tx_ring, buffer, count);
+    // Enable TX.
+    p8251a_cmd(cmd | CMD_TX_ENABLE);
+    return count;
 }

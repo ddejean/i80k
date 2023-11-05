@@ -16,8 +16,6 @@ void *heap_max;
 void *heap;
 
 void heap_initialize(void *start, void *end) {
-    printf("Heap: [%p:%p], %u bytes\n", start, end, end - start);
-
     heap_base = start;
     heap_max = end;
     heap = heap_base;

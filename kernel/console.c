@@ -6,13 +6,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "uart.h"
+#include "p8251.h"
+
+void console_initialize(void) { p8251_initialize(19200); }
 
 int console_putchar(int c) {
     if ((char)c == '\n') {
-        uart_putchar('\r');
+        p8251_putchar('\r');
     }
-    return uart_putchar((char)c);
+    return p8251_putchar((char)c);
 }
 
 int console_puts(const char *s) {
@@ -20,8 +22,8 @@ int console_puts(const char *s) {
     const char br[2] = {'\r', '\n'};
 
     len = strlen(s);
-    uart_write(s, len);
-    uart_write(br, sizeof(br));
+    p8251_write(s, len);
+    p8251_write(br, sizeof(br));
     return len + sizeof(br);
 }
 
@@ -29,7 +31,7 @@ int console_getchar(void) {
     char c;
     int len;
 
-    len = uart_read(&c, sizeof(c));
+    len = p8251_read(&c, sizeof(c));
     if (len == 1) {
         return c;
     }
