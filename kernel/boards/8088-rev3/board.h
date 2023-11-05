@@ -5,6 +5,8 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+#define BOARD_8088_REV3
+
 // Kernel code segment used during bootstrap.
 // The start code is supposed to run at address xxxx:0400 but the ROM is
 // physically located at address F000:8000. The segment is calculated to
@@ -29,8 +31,16 @@
 #define PORT_DEBUG 0x80
 #define PORT_UART 0x3F8
 
-// PIT clock frequency: 2.4576Mhz
-#define PIT_FREQ 2457600U
+// PIT clock frequency: 4.9152Mhz
+#define PIT_FREQ 4915200U
+// The clock counter defines how many periods the counter has to wait before
+// firing and interrupt. The PIT clock frequency is 1.25Mhz and we want it to
+// fire every 20 ms.
+#define CLOCK_COUNTER (PIT_FREQ / 100)
+// The clock increment is the count of ms spent between each interrupt.
+#define CLOCK_INC_MS 10
+// UART clock frequency: 4.9152Mhz
+#define UART_FREQ 4915200U
 
 // Symbols created by the linker to help manipulating the binary sections.
 // Note: guarded by a macro as this file is also included in .S files.

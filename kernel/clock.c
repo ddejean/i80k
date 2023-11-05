@@ -10,13 +10,6 @@
 #include "irq.h"
 #include "pit.h"
 
-// The clock counter defines how many periods the counter has to wait before
-// firing and interrupt. The PIT clock frequency is 1.25Mhz and we want it to
-// fire every 20 ms.
-#define CLOCK_COUNTER (PIT_FREQ / 50)
-// The clock increment is the count of ms spent between each interrupt.
-#define CLOCK_INC_MS 20
-
 // Kernel ticks.
 unsigned long ticks;
 

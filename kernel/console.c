@@ -6,15 +6,31 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "p8251.h"
+#include "board.h"
 
-void console_initialize(void) { p8251_initialize(19200); }
+#ifdef BOARD_8088_REV2
+#include "p8251.h"
+#define uart_initialize p8251_initialize
+#define uart_putchar p8251_putchar
+#define uart_write p8251_write
+#define uart_read p8251_read
+#endif
+
+#ifdef BOARD_8088_REV3
+#include "pc16550.h"
+#define uart_initialize pc16550_initialize
+#define uart_putchar pc16550_putchar
+#define uart_write pc16550_write
+#define uart_read pc16550_read
+#endif
+
+void console_initialize(void) { uart_initialize(19200); }
 
 int console_putchar(int c) {
     if ((char)c == '\n') {
-        p8251_putchar('\r');
+        uart_putchar('\r');
     }
-    return p8251_putchar((char)c);
+    return uart_putchar((char)c);
 }
 
 int console_puts(const char *s) {
@@ -22,8 +38,8 @@ int console_puts(const char *s) {
     const char br[2] = {'\r', '\n'};
 
     len = strlen(s);
-    p8251_write(s, len);
-    p8251_write(br, sizeof(br));
+    uart_write(s, len);
+    uart_write(br, sizeof(br));
     return len + sizeof(br);
 }
 
@@ -31,7 +47,7 @@ int console_getchar(void) {
     char c;
     int len;
 
-    len = p8251_read(&c, sizeof(c));
+    len = uart_read(&c, sizeof(c));
     if (len == 1) {
         return c;
     }
