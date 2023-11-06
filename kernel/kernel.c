@@ -24,10 +24,13 @@ void kernel(void) {
 
     // Setup the interruption controller.
     irq_setup();
-    sti();
 
     // Prepare the console to be able to print traces.
     console_initialize();
+
+    // TODO: investigate why the driver doesn't work if interrupts are enabled
+    // before.
+    sti();
 
     printf("Kernel loaded:\n");
     printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
