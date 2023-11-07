@@ -89,16 +89,10 @@ typedef enum intr {
 // Assembly interrupt handler for the UART.
 extern void uart_int_handler(void);
 
-// Size of the ring buffer.
-#define RINGBUF_SIZE 512
-// Pre-allocated ring buffer for the reception.
-static char rx_buf[RINGBUF_SIZE];
 // RX ring buffer instance.
-static ring_buffer_t rx_ring;
-// Pre-allocated ring buffer for emission.
-static char tx_buf[RINGBUF_SIZE];
+static ring_buffer_t *rx_ring;
 // TX ring buffer instance.
-static ring_buffer_t tx_ring;
+static ring_buffer_t *tx_ring;
 
 static void pc16550_set_baud_rate(uint16_t baud_rate) {
     uint8_t lcr;
@@ -119,11 +113,7 @@ static void pc16550_set_baud_rate(uint16_t baud_rate) {
     outb(PC16550_LINE_CTRL, lcr);
 }
 
-static inline void pc16550_enable_tx_int(void) {
-    uint8_t ier = inb(PC16550_IER);
-    ier |= IER_TX_RDY;
-    outb(PC16550_IER, ier);
-}
+static inline void pc16550_enable_tx_int(void) {}
 
 static inline void pc16550_disable_tx_int(void) {
     uint8_t ier = inb(PC16550_IER);
@@ -131,10 +121,10 @@ static inline void pc16550_disable_tx_int(void) {
     outb(PC16550_IER, ier);
 }
 
-void pc16550_initialize(uint16_t baud_rate) {
-    ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
-    ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
-
+void pc16550_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
+                        uint16_t baud_rate) {
+    rx_ring = rxq;
+    tx_ring = txq;
     // Enable FIFO mode with a trigger at 8 bytes in the queue.
     outb(PC16550_FCR,
          FCR_RX_TX_ENABLE | FCR_RX_CLEAR | FCR_TX_CLEAR | FCR_TRIGGER_14B);
@@ -152,10 +142,7 @@ void pc16550_initialize(uint16_t baud_rate) {
     // Unmask the UART interrupt.
     irq_enable(MASK_IRQ4);
 
-    printf(
-        "UART: baudrate: %u, ring buffers size: %d bytes, "
-        "using IRQ4\n",
-        baud_rate, RINGBUF_SIZE);
+    printf("UART: baudrate: %u, using IRQ4\n", baud_rate);
 }
 
 void uart_handler(void) {
@@ -170,7 +157,7 @@ void uart_handler(void) {
                 // bytes we can pull.
                 for (int i = 0; i < PC16550_RX_FIFO_TRIG; i++) {
                     char data = (char)inb(PC16550_BUFR);
-                    ring_buffer_queue(&rx_ring, data);
+                    ring_buffer_queue(rx_ring, data);
                 }
                 break;
 
@@ -181,7 +168,7 @@ void uart_handler(void) {
                 status = inb(PC16550_LSR);
                 while (status & LSR_DATA_READY) {
                     char data = (char)inb(PC16550_BUFR);
-                    ring_buffer_queue(&rx_ring, data);
+                    ring_buffer_queue(rx_ring, data);
                     status = inb(PC16550_LSR);
                 }
                 break;
@@ -193,11 +180,11 @@ void uart_handler(void) {
 
             case TX_EMPTY:
                 // The FIFO is empty, we can put at most 16 bytes inside.
-                if (!ring_buffer_is_empty(&tx_ring)) {
+                if (!ring_buffer_is_empty(tx_ring)) {
                     for (int i = 0; i < PC16550_TX_FIFO_SZ &&
-                                    !ring_buffer_is_empty(&tx_ring);
+                                    !ring_buffer_is_empty(tx_ring);
                          i++) {
-                        ring_buffer_dequeue(&tx_ring, &data);
+                        ring_buffer_dequeue(tx_ring, &data);
                         outb(PC16550_BUFR, data);
                     }
                 } else {
@@ -218,27 +205,9 @@ void uart_handler(void) {
     irq_ack();
 }
 
-int pc16550_read(const char *buffer, const size_t count) {
-    size_t len = 0;
-
-    // Read the data from the ring buffer.
-    if (!ring_buffer_is_empty(&rx_ring)) {
-        len = ring_buffer_dequeue_arr(&rx_ring, (char *)buffer, count);
-    }
-
-    return len;
-}
-
-int pc16550_putchar(const char c) {
-    ring_buffer_queue(&tx_ring, (char)c);
-    pc16550_enable_tx_int();
-    return c;
-}
-
-int pc16550_write(const char *buffer, const size_t count) {
-    // Put the data in the buffer.
-    ring_buffer_queue_arr(&tx_ring, buffer, count);
-    // Enable TX.
-    pc16550_enable_tx_int();
-    return count;
+void pc16550_start_xmit(void) {
+    uint8_t ier = inb(PC16550_IER);
+    // Enable the transmit interruption.
+    ier |= IER_TX_RDY;
+    outb(PC16550_IER, ier);
 }

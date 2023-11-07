@@ -17,20 +17,11 @@
 void kernel(void) {
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(_bss_end, (void *)KERNEL_STACK_LOW);
-
+    // Prepare the console to be able to print traces.
+    console_initialize();
     // Prepares the interrupt system to allow the syscalls to be operational.
     interrupts_setup(KERNEL_CS);
     syscall_setup();
-
-    // Setup the interruption controller.
-    irq_setup();
-
-    // Prepare the console to be able to print traces.
-    console_initialize();
-
-    // TODO: investigate why the driver doesn't work if interrupts are enabled
-    // before.
-    sti();
 
     printf("Kernel loaded:\n");
     printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
@@ -39,6 +30,13 @@ void kernel(void) {
            _data_end, _data_end - _data_start);
     printf("  .bss:  %04x[%p:%p], %d bytes\n", KERNEL_DS, _bss_start, _bss_end,
            _bss_end - _bss_start);
+
+    // Setup the interruption controller.
+    irq_setup();
+    sti();
+
+    // Binds the console to the board UART.
+    console_bind_uart();
 
     // Initialize the clock system.
     clock_initialize();

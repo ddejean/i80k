@@ -6,6 +6,9 @@
 // console_initialize prepares the console to send and receive text.
 void console_initialize(void);
 
+// console_bind_uart
+void console_bind_uart(void);
+
 // console_putchar() writes <c> onto the binded console.
 int console_putchar(int c);
 

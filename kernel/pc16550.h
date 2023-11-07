@@ -6,18 +6,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "utils/ringbuffer.h"
+
 // pc16550_initialize prepares the UART for sending and receiving using buffers
 // and interruptions.
-void pc16550_initialize(uint16_t baud_rate);
+void pc16550_initialize(ring_buffer_t *rx_ring, ring_buffer_t *tx_ring,
+                        uint16_t baud_rate);
 
-// pc16550_read reads <count> bytes of data from the wire and puts them into
-// <buffer>.
-int pc16550_read(const char *buffer, const size_t count);
-
-// pc16550_putchar sends <c> on the wire.
-int pc16550_putchar(const char c);
-
-// pc16550_write sends <count> bytes from <buffer> onto the wire.
-int pc16550_write(const char *buffer, const size_t count);
+// pc16550_start_xmit notifies the UART driver there's data in the tx queue.
+void pc16550_start_xmit(void);
 
 #endif  // _PC16550_H_
