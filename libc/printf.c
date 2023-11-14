@@ -41,7 +41,6 @@
 // Printf configuration
 #define PRINTF_DISABLE_SUPPORT_FLOAT
 #define PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-#define PRINTF_DISABLE_SUPPORT_LONG_LONG
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
