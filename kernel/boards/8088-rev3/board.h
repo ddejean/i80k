@@ -31,11 +31,11 @@
 #define PORT_DEBUG 0x80
 #define PORT_UART 0x3F8
 
-// PIT clock frequency: 4.9152Mhz
-#define PIT_FREQ 4915200U
+// PIT clock frequency: 2.4576Mhz
+#define PIT_FREQ 2457600U
 // The clock counter defines how many periods the counter has to wait before
-// firing and interrupt. The PIT clock frequency is 1.25Mhz and we want it to
-// fire every 20 ms.
+// firing and interrupt. The PIT clock frequency is 2.4576 Mhz and we want it to
+// fire every 10 ms.
 #define CLOCK_COUNTER (PIT_FREQ / 100)
 // The clock increment is the count of ms spent between each interrupt.
 #define CLOCK_INC_MS 10

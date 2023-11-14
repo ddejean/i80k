@@ -10,8 +10,9 @@
 #include "irq.h"
 #include "pit.h"
 
-// Kernel ticks.
-unsigned long ticks;
+// Kernel ticks. Marked as volatile to prevent the kernel from doing any
+// optimizations on it.
+volatile unsigned long ticks;
 
 // Interruption request handler.
 void clock_int_handler(void);
@@ -24,11 +25,6 @@ void clock_initialize(void) {
     interrupts_handle(INT_IRQ0, clock_int_handler);
     pit_set_alarm(PIT_TIMER0, CLOCK_COUNTER);
     irq_enable(MASK_IRQ0);
-}
-
-void clock_handler(void) {
-    irq_ack();
-    ticks++;
 }
 
 unsigned long clock_now(void) {
