@@ -71,5 +71,5 @@ int console_getchar(void) {
         return -1;
     }
     ring_buffer_dequeue(&rx_ring, &c);
-    return c;
+    return (int)c & 0xff;
 }
