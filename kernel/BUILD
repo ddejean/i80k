@@ -44,5 +44,6 @@ cc_binary(
         "//kernel/boards:board",
         "//kernel/utils",
         "//libc:c",
+        "//third_party/async_xmodem",
     ],
 )

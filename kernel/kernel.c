@@ -10,7 +10,9 @@
 #include "heap.h"
 #include "interrupts.h"
 #include "irq.h"
+#include "mem.h"
 #include "syscall.h"
+#include "update.h"
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
@@ -41,15 +43,26 @@ void kernel(void) {
     // Initialize the clock system.
     clock_initialize();
 
-    // Kernel idle task.
+    // Shell ersatz
     while (1) {
         int c;
 
         c = getchar();
         if (c < 0) {
-            // clock_wait(100, POLL_WAIT);
-        } else {
-            printf("%c", (char)c);
+            // No char, just wait for the next one.
+            hlt();
+            continue;
+        }
+
+        printf("%c\n", (char)c);
+
+        switch ((char)c) {
+            case 'u':
+                update();
+                break;
+            default:
+                printf("command '%c' unknown.\n", (char)c);
+                break;
         }
     }
 }
