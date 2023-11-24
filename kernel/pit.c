@@ -50,3 +50,16 @@ void pit_freq_gen(timer_t timer, uint32_t freq) {
     // PIT_FREQ/divider.
     pit_configure_counter(timer, MODE_SQUARE_WAVE, divider);
 }
+
+uint16_t pit_read(timer_t timer) {
+    uint8_t mode, port, low, high;
+    mode = MODE_COUNTER(timer) | MODE_LATCH;
+    port = PIT_COUNTER(timer);
+
+    outb(PIT_MODE, mode);
+    low = inb(port);
+    high = inb(port);
+    return high << 8 | low;
+}
+
+uint32_t pit_ns_per_tick(void) { return 1000000000ul / PIT_FREQ; }

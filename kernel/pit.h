@@ -14,7 +14,13 @@ typedef uint8_t timer_t;
 void pit_set_alarm(timer_t timer, uint16_t counter);
 
 // pit_freq_gen configures <timer> as a square wave generator with a frequency
-// of PIT_FREQ/<divider>.
+// of <freq>.
 void pit_freq_gen(timer_t timer, uint32_t freq);
+
+// pit_read returns the current value of the <timer> counter.
+uint16_t pit_read(timer_t timer);
+
+// pit_ns_per_tick returns the number of ns spent during one timer increment.
+uint32_t pit_ns_per_tick(void);
 
 #endif  // _PIT_H_
