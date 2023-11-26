@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "board.h"
+#include "cfi.h"
 #include "clock.h"
 #include "console.h"
 #include "cpu.h"
@@ -43,6 +44,9 @@ void kernel(void) {
     // Initialize the clock system.
     clock_initialize();
 
+    // ROM storage.
+    cfi_initialize();
+
     // Shell ersatz
     while (1) {
         int c;
@@ -59,6 +63,13 @@ void kernel(void) {
         switch ((char)c) {
             case 'u':
                 update();
+                break;
+            case 'e':
+                printf("Erasing chip...\n");
+                cfi_chip_erase();
+                printf("Write 0x55 to address 0 ...\n");
+                cfi_write(0, 0x55);
+                printf("OK\n");
                 break;
             default:
                 printf("command '%c' unknown.\n", (char)c);
