@@ -20,4 +20,10 @@ typedef enum wait wait_t;
 // expired. <type> defines the wait behavior.
 int clock_wait(unsigned long delay, wait_t type);
 
+// udelay waits for <delay> microseconds.
+void udelay(unsigned long delay);
+
+// mdelay waits for <delay> milliseconds.
+void mdelay(unsigned long delay);
+
 #endif  // _CLOCK_H_

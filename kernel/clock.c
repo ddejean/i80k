@@ -11,7 +11,7 @@
 #include "pit.h"
 
 // Count of iterations used in the delay calibration loop.
-#define CLOCK_CAL_LOOPS 16384
+#define CLOCK_CAL_LOOPS 20000
 
 // Average ns spent per loop iteration in __delay().
 unsigned long ns_per_loop;
@@ -84,5 +84,20 @@ int clock_wait(unsigned long delay, wait_t type) {
         case BLOCK_WAIT:
         default:
             return -1;
+    }
+}
+
+inline void udelay(unsigned long delay) {
+    unsigned long loops = (delay * 1000) / ns_per_loop;
+    if (!loops) {
+        __delay(1);
+        return;
+    }
+    __delay(loops);
+}
+
+void mdelay(unsigned long delay) {
+    while (delay--) {
+        __delay(1000000);
     }
 }
