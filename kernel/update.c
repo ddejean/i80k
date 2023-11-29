@@ -6,7 +6,9 @@
 #include <stdio.h>
 
 #include "board.h"
+#include "cfi.h"
 #include "clock.h"
+#include "cpu.h"
 #include "mem.h"
 #include "third_party/async_xmodem/xmodem_server.h"
 
@@ -30,6 +32,8 @@ void tx_byte(struct xmodem_server *xdm, uint8_t byte, void *cb_data) {
 }
 
 void update(void) {
+    uint32_t update_size = 0;
+
     printf("Receiving software update: starting xmodem server\n");
     xmodem_server_init(&server, tx_byte, NULL);
 
@@ -54,10 +58,25 @@ void update(void) {
             ksegmemcpy(addr, seg, payload, KERNEL_CS, rx_data_len);
             // Increment the destination address.
             dst += rx_data_len;
+            update_size += rx_data_len;
         }
     }
     if (xmodem_server_get_state(&server) == XMODEM_STATE_FAILURE) {
         printf("Xmodem transfer failed.\n");
         return;
     }
+
+    printf("Erasing flash ROM...\n");
+    cfi_chip_erase();
+
+    printf("Writing ROM update...\n");
+    for (uint32_t offset = 0; offset < update_size; offset++) {
+        volatile uint8_t __far *src =
+            (volatile uint8_t __far *)(0x80000000 + ((offset & 0xf0000) << 12) +
+                                       (offset & 0xffff));
+        cfi_write(offset, *src);
+    }
+    printf("\ndone.\n");
+    printf("Rebooting now.\n");
+    reboot();
 }

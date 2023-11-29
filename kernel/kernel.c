@@ -64,13 +64,6 @@ void kernel(void) {
             case 'u':
                 update();
                 break;
-            case 'e':
-                printf("Erasing chip...\n");
-                cfi_chip_erase();
-                printf("Write 0x55 to address 0 ...\n");
-                cfi_write(0, 0x55);
-                printf("OK\n");
-                break;
             default:
                 printf("command '%c' unknown.\n", (char)c);
                 break;

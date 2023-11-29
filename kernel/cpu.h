@@ -37,4 +37,7 @@ static inline void sti(void) { __asm__ __volatile__("sti"); }
 // hlt pauses the processor until an interruption.
 static inline void hlt(void) { __asm__ __volatile__("hlt"); }
 
+// reboot restarts the CPU.
+void reboot(void) __attribute__((noreturn));
+
 #endif  // _CPU_H_

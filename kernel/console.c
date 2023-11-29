@@ -38,7 +38,7 @@ void console_initialize(void) {
 }
 
 void console_bind_uart(void) {
-    uart_initialize(&rx_ring, &tx_ring, 19200);
+    uart_initialize(&rx_ring, &tx_ring, 38400);
     if (!ring_buffer_is_empty(&tx_ring)) {
         uart_start_xmit();
     }
