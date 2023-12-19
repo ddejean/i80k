@@ -75,10 +75,13 @@ func main() {
 		log.Fatal("failed to read system registers: ", err)
 	}
 
+	// The 808{6,8} interrupt table is located at address 0000:0000 and has a
+	// 256 entries of 4 bytes.
+	sregs.IDT.Base = 0
+	sregs.IDT.Limit = 0x400
+	// The 808{6,8} starts at address F000:FFF0.
 	sregs.CS.Selector = 0
 	sregs.CS.Base = 0xFFFF0
-	sregs.IDT.Base = 0
-	sregs.IDT.Limit = 0x3FF
 
 	if err := vcpu.SetSystemRegs(&sregs); err != nil {
 		log.Fatal("failed to write system registers: ", err)
