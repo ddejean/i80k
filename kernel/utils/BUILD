@@ -22,6 +22,6 @@ cc_test(
     srcs = ["ringbuffer_test.cc"],
     deps = [
         ":utils",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest_main",
     ],
 )

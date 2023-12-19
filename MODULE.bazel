@@ -1,0 +1,26 @@
+# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+
+# Declare a Bazel module for the whole project.
+module(
+    name = "i80k",
+)
+
+# Register the custom ia16 toolchain for 8088 CPUs.
+register_toolchains("//toolchains:8088_toolchain")
+
+# Test dependency required for the kernel unit tests.
+bazel_dep(name = "googletest", version = "1.14.0")
+
+# Set of Bazel rules to build Go packages.
+bazel_dep(name = "rules_go", version = "0.43.0")
+
+# Bazel/Go helpers to managed dependencies.
+bazel_dep(name = "gazelle", version = "0.34.0")
+
+# Deduce dependencies from the go.mod file and declare them as module dependencies.
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//vboard:go.mod")
+use_repo(
+    go_deps,
+    "org_golang_x_sys",
+)
