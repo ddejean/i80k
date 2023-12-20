@@ -15,6 +15,8 @@ const (
 const (
 	KVM_CREATE_VCPU            = 0xae41
 	KVM_SET_USER_MEMORY_REGION = 0x4020ae46
+	KVM_CREATE_IRQCHIP         = 0xae60
+	KVM_IRQ_LINE               = 0x4020ae61
 )
 
 // KVM ioctls values for vCPU fds.
@@ -54,4 +56,11 @@ const (
 	KVM_EXIT_DCR             = 15
 	KVM_EXIT_NMI             = 16
 	KVM_EXIT_INTERNAL_ERROR  = 17
+)
+
+type IODirection uint8
+
+const (
+	KVM_EXIT_IO_IN IODirection = iota
+	KVM_EXIT_IO_OUT
 )

@@ -4,6 +4,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"unsafe"
@@ -65,6 +66,10 @@ func main() {
 		log.Fatalf("failed to attach memory to guest: %v", err)
 	}
 
+	if err := vm.CreateIRQChip(); err != nil {
+		log.Fatalf("failed to create interrupt controller: %v", err)
+	}
+
 	vcpu, err := vm.CreateVCPU()
 	if err != nil {
 		log.Fatal("failed to create vCPU: ", err)
@@ -96,17 +101,43 @@ func main() {
 		log.Fatal("failed to write registers: ", err)
 	}
 
+	// Create and IO mapper to match ports and devices.
+	iom := newIOMapper()
+
 	for {
 		if err := vcpu.Run(); err != nil {
 			log.Fatal(err)
 		}
 		switch vcpu.Context().ExitReason {
-		case kvm.KVM_EXIT_HLT:
-			log.Println("HLT: interrupts not implemented. Leaving.")
-			return
 		case kvm.KVM_EXIT_IO:
-			log.Printf("IO: %v", vcpu.Context().IO())
+			if err := doIO(iom, vcpu.Context()); err != nil {
+				log.Fatal("IO failed: ", err)
+			}
+
 		default:
 		}
 	}
+}
+
+func doIO(iom *ioMapper, run *kvm.Run) error {
+	io := run.IO()
+
+	// Compute the offset of the data to read/write in the kvm.Run struct.
+	dataptr := (*uint8)(unsafe.Add(unsafe.Pointer(run), io.DataOffset))
+
+	switch io.Direction {
+	case kvm.KVM_EXIT_IO_IN:
+		var err error
+		*dataptr, err = iom.Read(io.Port)
+		if err != nil {
+			return fmt.Errorf("failed I/O read: %v", err)
+		}
+	case kvm.KVM_EXIT_IO_OUT:
+		if err := iom.Write(io.Port, *dataptr); err != nil {
+			return fmt.Errorf("failed I/O write: %v", err)
+		}
+	default:
+		return fmt.Errorf("invalid I/O direction %d", io.Direction)
+	}
+	return nil
 }

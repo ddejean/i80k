@@ -35,7 +35,7 @@ func (r *Run) IO() *IO {
 		return nil
 	}
 	return &IO{
-		Direction:  uint8(r.Data[0]),
+		Direction:  IODirection(r.Data[0]),
 		Size:       uint8(r.Data[0] >> 8),
 		Port:       uint16(r.Data[0] >> 16),
 		Count:      uint32(r.Data[0] >> 32),
@@ -45,7 +45,7 @@ func (r *Run) IO() *IO {
 
 // IO mirrors struct kvm_run.io.
 type IO struct {
-	Direction  uint8
+	Direction  IODirection
 	Size       uint8
 	Port       uint16
 	Count      uint32

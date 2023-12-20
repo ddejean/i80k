@@ -74,3 +74,11 @@ func (vm *VM) CreateVCPU() (*VCPU, error) {
 		run: (*Run)(unsafe.Pointer(mapRun)),
 	}, nil
 }
+
+func (vm *VM) CreateIRQChip() error {
+	_, _, errno := unix.Syscall(unix.SYS_IOCTL, vm.fd, KVM_CREATE_IRQCHIP, 0)
+	if errno != 0 {
+		return fmt.Errorf("failed to create IRQ chip: %v", errno)
+	}
+	return nil
+}
