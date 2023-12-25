@@ -1,7 +1,5 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-#include "p8251.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,7 +9,8 @@
 #include "interrupts.h"
 #include "irq.h"
 #include "pit.h"
-#include "utils/ringbuffer.h"
+#include "ringbuffer.h"
+#include "uart.h"
 
 #define P8251A_CMD (PORT_UART | 1)
 #define P8251A_DATA (PORT_UART)
@@ -69,8 +68,8 @@ static inline void p8251a_cmd(uint8_t command) {
     outb(P8251A_CMD, cmd);
 }
 
-void p8251_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
-                      uint16_t baud_rate) {
+void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
+                     uint16_t baud_rate) {
     rx_ring = rxq;
     tx_ring = txq;
     // Configure the PIT to provide the frequency matching the desired baud
@@ -128,4 +127,4 @@ void uart_handler(void) {
     irq_ack();
 }
 
-void p8251_start_xmit(void) { p8251a_cmd(cmd | CMD_TX_ENABLE); }
+void uart_start_xmit(void) { p8251a_cmd(cmd | CMD_TX_ENABLE); }

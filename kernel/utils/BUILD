@@ -9,6 +9,7 @@ cc_library(
     hdrs = [
         "ringbuffer.h",
     ],
+    includes = ["."],
     visibility = ["//visibility:public"],
     deps = select({
         "@platforms//os:none": ["//libc:c"],

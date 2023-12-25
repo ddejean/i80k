@@ -7,19 +7,8 @@
 #include <string.h>
 
 #include "board.h"
+#include "uart.h"
 #include "utils/ringbuffer.h"
-
-#ifdef BOARD_8088_REV2
-#include "p8251.h"
-#define uart_initialize p8251_initialize
-#define uart_start_xmit p8251_start_xmit
-#endif
-
-#ifdef BOARD_8088_REV3
-#include "pc16550.h"
-#define uart_initialize pc16550_initialize
-#define uart_start_xmit pc16550_start_xmit
-#endif
 
 // Size of the ring buffer.
 #define RINGBUF_SIZE 512

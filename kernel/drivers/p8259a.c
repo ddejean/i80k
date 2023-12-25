@@ -1,7 +1,5 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-#include "irq.h"
-
 #include <stdint.h>
 
 #include "board.h"
@@ -25,7 +23,7 @@
 #define ICW4_BUF_MASTER 0x0C  // Buffered mode/master
 #define ICW4_SFNM 0x10        // Special fully nested (not)
 
-static inline void pic_initialize(uint8_t offset) {
+static inline void p8259a_initialize(uint8_t offset) {
     // First configuration word (ICW1):
     // - Level triggered (not edge triggered)
     // - Interrupts handlers entries are 4 bytes wide (segment + offset)
@@ -40,28 +38,28 @@ static inline void pic_initialize(uint8_t offset) {
     outb(PIC_A0_1, MASK_ALL);
 }
 
-static inline void pic_enable(uint8_t mask) {
+static inline void p8259a_enable(uint8_t mask) {
     uint8_t value = inb(PIC_A0_1);
     value &= ~mask;
     outb(PIC_A0_1, value);
 }
 
-static inline void pic_disable(uint8_t mask) {
+static inline void p8259a_disable(uint8_t mask) {
     uint8_t value = inb(PIC_A0_1);
     value |= mask;
     outb(PIC_A0_1, value);
 }
 
-static inline void pic_ack(void) { outb(PORT_PIC, 0x20); }
+static inline void p8259a_ack(void) { outb(PORT_PIC, 0x20); }
 
 void irq_setup(void) {
     // Configure the PIC for the board configuration and the offset in the
     // interrupt table.
-    pic_initialize(IDT_IRQ_OFFSET);
+    p8259a_initialize(IDT_IRQ_OFFSET);
 }
 
-void irq_enable(uint8_t mask) { pic_enable(mask); }
+void irq_enable(uint8_t mask) { p8259a_enable(mask); }
 
-void irq_disable(uint8_t mask) { pic_disable(mask); }
+void irq_disable(uint8_t mask) { p8259a_disable(mask); }
 
-void irq_ack(void) { pic_ack(); }
+void irq_ack(void) { p8259a_ack(); }

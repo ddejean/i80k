@@ -1,17 +1,16 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-#include "pc16550.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #include "board.h"
 #include "cpu.h"
+#include "include/uart.h"
 #include "interrupts.h"
 #include "irq.h"
 #include "pit.h"
-#include "utils/ringbuffer.h"
+#include "ringbuffer.h"
 
 #define PC16550_TX_FIFO_SZ 16
 #define PC16550_RX_FIFO_TRIG 14
@@ -121,8 +120,8 @@ static inline void pc16550_disable_tx_int(void) {
     outb(PC16550_IER, ier);
 }
 
-void pc16550_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
-                        uint16_t baud_rate) {
+void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
+                     uint16_t baud_rate) {
     rx_ring = rxq;
     tx_ring = txq;
     // Enable FIFO mode with a trigger at 8 bytes in the queue.
@@ -205,7 +204,7 @@ void uart_handler(void) {
     irq_ack();
 }
 
-void pc16550_start_xmit(void) {
+void uart_start_xmit(void) {
     uint8_t ier = inb(PC16550_IER);
     // Enable the transmit interruption.
     ier |= IER_TX_RDY;
