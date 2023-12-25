@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"unsafe"
+	"vboard/devices"
 	"vboard/kvm"
 
 	"golang.org/x/sys/unix"
@@ -104,13 +105,27 @@ func main() {
 	// Create and IO mapper to match ports and devices.
 	iom := newIOMapper()
 
+	timer := devices.NewP8254()
+	timer.Start()
+	defer timer.Stop()
+	iom.Add(0x40, timer)
+
+	uart := devices.NewP16550(func(level uint32) {
+		if err := vm.SetIRQLine(4, level); err != nil {
+			log.Printf("failed to set IRQ line %d to level %d", 4, level)
+		}
+	})
+	uart.Start()
+	defer uart.Stop()
+	iom.Add(0x3f8, uart)
+
 	for {
 		if err := vcpu.Run(); err != nil {
 			log.Fatal(err)
 		}
 		switch vcpu.Context().ExitReason {
 		case kvm.KVM_EXIT_IO:
-			if err := doIO(iom, vcpu.Context()); err != nil {
+			if err := doIO(iom, vcpu); err != nil {
 				log.Fatal("IO failed: ", err)
 			}
 
@@ -119,22 +134,26 @@ func main() {
 	}
 }
 
-func doIO(iom *ioMapper, run *kvm.Run) error {
-	io := run.IO()
+func doIO(iom *ioMapper, cpu *kvm.VCPU) error {
+	io := cpu.Context().IO()
 
-	// Compute the offset of the data to read/write in the kvm.Run struct.
-	dataptr := (*uint8)(unsafe.Add(unsafe.Pointer(run), io.DataOffset))
+	// Obtain a reference to the data contained in vCPU mapped memory.
+	dataptr := cpu.ContextData(io.DataOffset)
 
 	switch io.Direction {
 	case kvm.KVM_EXIT_IO_IN:
 		var err error
 		*dataptr, err = iom.Read(io.Port)
 		if err != nil {
-			return fmt.Errorf("failed I/O read: %v", err)
+			log.Println(err)
+			return nil
+			//return fmt.Errorf("failed I/O read: %v", err)
 		}
 	case kvm.KVM_EXIT_IO_OUT:
 		if err := iom.Write(io.Port, *dataptr); err != nil {
-			return fmt.Errorf("failed I/O write: %v", err)
+			log.Println(err)
+			return nil
+			//return fmt.Errorf("failed I/O write: %v", err)
 		}
 	default:
 		return fmt.Errorf("invalid I/O direction %d", io.Direction)

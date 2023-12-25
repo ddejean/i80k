@@ -10,8 +10,8 @@ import (
 )
 
 type VCPU struct {
-	fd  uintptr
-	run *Run
+	fd     uintptr
+	mapRun uintptr
 }
 
 func (c *VCPU) GetSystemRegs(sregs *SRegs) error {
@@ -59,5 +59,9 @@ func (c *VCPU) Run() error {
 }
 
 func (c *VCPU) Context() *Run {
-	return c.run
+	return (*Run)(unsafe.Pointer(c.mapRun))
+}
+
+func (c *VCPU) ContextData(offset uint64) *uint8 {
+	return (*uint8)(unsafe.Pointer(c.mapRun + uintptr(offset)))
 }

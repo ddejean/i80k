@@ -119,3 +119,8 @@ type DTable struct {
 	Limit uint16
 	_     [3]uint16
 }
+
+type IRQLevel struct {
+	IRQ   uint32
+	Level uint32
+}
