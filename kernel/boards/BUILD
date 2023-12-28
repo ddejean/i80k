@@ -21,21 +21,29 @@ config_setting(
 
 cc_library(
     name = "board",
-    srcs = select({
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]) + select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:srcs"],
         ":8088-rev3": ["//kernel/boards/8088-rev3:srcs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    hdrs = select({
+    hdrs = glob([
+        "*.h",
+    ]) + select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:hdrs"],
         ":8088-rev3": ["//kernel/boards/8088-rev3:hdrs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    includes = select({
+    includes = ["."] + select({
         ":8088-rev2": ["8088-rev2"],
         ":8088-rev3": ["8088-rev3"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    deps = [
+        "//libc:c",
+    ],
     # Required to ensure bootstrap and crt0 files are included even if their
     # symbols are not referenced anywhere.
     alwayslink = True,

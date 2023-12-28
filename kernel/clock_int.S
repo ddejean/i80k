@@ -16,7 +16,7 @@ clock_int_handler:
     push %ax
     // Ack the interrupt controller.
     movb $0x20, %al
-    outb %al, $PORT_PIC
+    outb %al, $0x20
     // Load the current tick value
     mov ticks, %ax
     // Increment the tick least significant word by one and keep the carry.

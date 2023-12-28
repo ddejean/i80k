@@ -4,11 +4,12 @@
 
 #include "board.h"
 #include "cpu.h"
+#include "devices.h"
 #include "irq.h"
 
-// PIC ports
-#define PIC_A0_0 PORT_PIC        // PIC with A0=0
-#define PIC_A0_1 (PORT_PIC | 1)  // PIC with A0=1
+// PIC ports.
+#define PIC_CMD(dev) (dev->port)
+#define PIC_DATA(dev) (dev->port + 1)
 
 // PIC command words
 #define ICW1_ICW4 0x01       // ICW4 (not) needed
@@ -23,34 +24,40 @@
 #define ICW4_BUF_MASTER 0x0C  // Buffered mode/master
 #define ICW4_SFNM 0x10        // Special fully nested (not)
 
+// I/O device used by the driver.
+static struct io_device *pic;
+
 static inline void p8259a_initialize(uint8_t offset) {
+    // Get the PIC defition from the devices declared by the board.
+    pic = board_get_io_dev(IO_DEV_PIC_MASTER);
+
     // First configuration word (ICW1):
     // - Level triggered (not edge triggered)
     // - Interrupts handlers entries are 4 bytes wide (segment + offset)
     // - Single PIC
-    outb(PIC_A0_0, ICW1_INIT | ICW1_INTERVAL4 | ICW1_SINGLE | ICW1_ICW4);
+    outb(PIC_CMD(pic), ICW1_INIT | ICW1_INTERVAL4 | ICW1_SINGLE | ICW1_ICW4);
     // Second configuration word (ICW2): offset in interrupts table. 8 is the
     // classical offset for IBM PC/XT.
-    outb(PIC_A0_1, offset);
+    outb(PIC_DATA(pic), offset);
     // Fourth configuration word (ICW4): 8086 mode.
-    outb(PIC_A0_1, ICW4_8086);
+    outb(PIC_DATA(pic), ICW4_8086);
     // Mask all interrupts.
-    outb(PIC_A0_1, MASK_ALL);
+    outb(PIC_DATA(pic), MASK_ALL);
 }
 
 static inline void p8259a_enable(uint8_t mask) {
-    uint8_t value = inb(PIC_A0_1);
+    uint8_t value = inb(PIC_DATA(pic));
     value &= ~mask;
-    outb(PIC_A0_1, value);
+    outb(PIC_DATA(pic), value);
 }
 
 static inline void p8259a_disable(uint8_t mask) {
-    uint8_t value = inb(PIC_A0_1);
+    uint8_t value = inb(PIC_DATA(pic));
     value |= mask;
-    outb(PIC_A0_1, value);
+    outb(PIC_DATA(pic), value);
 }
 
-static inline void p8259a_ack(void) { outb(PORT_PIC, 0x20); }
+static inline void p8259a_ack(void) { outb(PIC_CMD(pic), 0x20); }
 
 void irq_setup(void) {
     // Configure the PIC for the board configuration and the offset in the

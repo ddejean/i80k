@@ -26,7 +26,6 @@
 #define IDT_IRQ_OFFSET 32
 
 // IO ports
-#define PORT_PIC 0x20
 #define PORT_PIT 0x40
 #define PORT_DEBUG 0x80
 #define PORT_UART 0x3F8
@@ -51,6 +50,9 @@ extern char _data_start[];
 extern char _data_end[];
 extern char _bss_start[];
 extern char _bss_end[];
+
+// board_initialize allow the board definition code to declare its devices.
+void board_initialize(void);
 #endif
 
 #endif  // _BOARD_H_

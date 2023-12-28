@@ -18,6 +18,8 @@
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
 void kernel(void) {
+    // Declare the devices present on the board.
+    board_initialize();
     // Initiliaze the heap to alloc future allocations.
     heap_initialize(_bss_end, (void *)KERNEL_STACK_LOW);
     // Prepare the console to be able to print traces.
