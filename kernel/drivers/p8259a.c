@@ -42,16 +42,18 @@ static inline void p8259a_initialize(uint8_t offset) {
     // Fourth configuration word (ICW4): 8086 mode.
     outb(PIC_DATA(pic), ICW4_8086);
     // Mask all interrupts.
-    outb(PIC_DATA(pic), MASK_ALL);
+    outb(PIC_DATA(pic), 0xff);
 }
 
-static inline void p8259a_enable(uint8_t mask) {
+static inline void p8259a_enable(int irq) {
+    uint8_t mask = 1 << irq;
     uint8_t value = inb(PIC_DATA(pic));
     value &= ~mask;
     outb(PIC_DATA(pic), value);
 }
 
-static inline void p8259a_disable(uint8_t mask) {
+static inline void p8259a_disable(int irq) {
+    uint8_t mask = 1 << irq;
     uint8_t value = inb(PIC_DATA(pic));
     value |= mask;
     outb(PIC_DATA(pic), value);
@@ -65,8 +67,8 @@ void irq_setup(void) {
     p8259a_initialize(IDT_IRQ_OFFSET);
 }
 
-void irq_enable(uint8_t mask) { p8259a_enable(mask); }
+void irq_enable(int irq) { p8259a_enable(irq); }
 
-void irq_disable(uint8_t mask) { p8259a_disable(mask); }
+void irq_disable(int irq) { p8259a_disable(irq); }
 
 void irq_ack(void) { p8259a_ack(); }

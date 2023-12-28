@@ -14,13 +14,4 @@ void interrupts_setup(uint16_t cs);
 // interruption number.
 void interrupts_handle(uint8_t index, void (*handler)(void));
 
-// irq_enable enables interrupts on the lines provided in mask.
-void irq_enable(uint8_t mask);
-
-// irq_disable disables interrupts on the lines provided in mask.
-void irq_disable(uint8_t mask);
-
-// irq_ack acknoledge an interrupt to the interrupt controller.
-void irq_ack(void);
-
 #endif  // _INTERRUPTS_H_
