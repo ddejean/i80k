@@ -27,7 +27,6 @@
 
 // IO ports
 #define PORT_DEBUG 0x80
-#define PORT_UART 0x3F8
 
 // The clock increment is the count of ms spent between each interrupt.
 #define CLOCK_INC_MS 20

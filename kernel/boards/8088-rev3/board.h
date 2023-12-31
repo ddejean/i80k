@@ -27,12 +27,9 @@
 
 // IO ports
 #define PORT_DEBUG 0x80
-#define PORT_UART 0x3F8
 
 // The clock increment is the count of ms spent between each interrupt.
 #define CLOCK_INC_MS 10
-// UART clock frequency: 4.9152Mhz
-#define UART_FREQ 4915200U
 
 // Symbols created by the linker to help manipulating the binary sections.
 // Note: guarded by a macro as this file is also included in .S files.

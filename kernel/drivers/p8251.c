@@ -12,8 +12,8 @@
 #include "ringbuffer.h"
 #include "uart.h"
 
-#define P8251A_CMD (PORT_UART | 1)
-#define P8251A_DATA (PORT_UART)
+#define P8251A_CMD(dev) (dev->port | 1)
+#define P8251A_DATA(dev) (dev->port)
 
 // P8251A configuration word.
 #define MODE_SYNC 0
@@ -56,6 +56,8 @@
 // Assembly interrupt handler for the UART.
 extern void uart_int_handler(void);
 
+// I/O device used by the driver.
+static struct io_device *uart;
 // RX ring buffer instance.
 static ring_buffer_t *rx_ring;
 // TX ring buffer instance.
@@ -65,7 +67,7 @@ static uint8_t cmd;
 
 static inline void p8251a_cmd(uint8_t command) {
     cmd = command;
-    outb(P8251A_CMD, cmd);
+    outb(P8251A_CMD(uart), cmd);
 }
 
 void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
@@ -76,24 +78,27 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     // rate.
     struct io_device *timer2 = board_get_io_dev(IO_DEV_PIT_TIMER2);
     pit_freq_gen(timer2, baud_rate);
+    // Obtain the UART device.
+    uart = board_get_io_dev(IO_DEV_UART);
     // According to the datasheet, the chip might be in an unknown configuration
     // state after power up. Complete the worst case scenarion initialization
     // sequence and manually reset the chip to ensure we're in the right state.
-    outb(P8251A_CMD, 0);
-    outb(P8251A_CMD, 0);
-    outb(P8251A_CMD, 0);
-    outb(P8251A_CMD, CMD_RESET);
+    outb(P8251A_CMD(uart), 0);
+    outb(P8251A_CMD(uart), 0);
+    outb(P8251A_CMD(uart), 0);
+    outb(P8251A_CMD(uart), CMD_RESET);
     // Configuration mode.
-    outb(P8251A_CMD, MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
+    outb(P8251A_CMD(uart),
+         MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
     // Hook up the interrupt handler.
-    interrupts_handle(INT_IRQ4, uart_int_handler);
+    interrupts_handle(IRQ_TO_INTERRUPT(uart->u.uart.irq), uart_int_handler);
     // Unmask the UART interrupt.
-    irq_enable(MASK_IRQ4);
+    irq_enable(uart->u.uart.irq);
     // Enable RX only (TX will be enabled when bytes are ready to send).
     p8251a_cmd(CMD_RX_ENABLE | CMD_FORCE_RTS);
 
     // Print only after the UART is correctly initialized.
-    printf("UART: baudrate: %u, using IRQ4\n", baud_rate);
+    printf("UART: baudrate: %u, using IRQ %d\n", baud_rate, uart->u.uart.irq);
 }
 
 void uart_handler(void) {
@@ -103,10 +108,10 @@ void uart_handler(void) {
     p8251a_cmd(cmd & ~CMD_FORCE_RTS);
 
     // Get the status of the UART controller.
-    status = inb(P8251A_CMD);
+    status = inb(P8251A_CMD(uart));
 
     if (status & STATUS_RXRDY) {
-        byte = inb(P8251A_DATA);
+        byte = inb(P8251A_DATA(uart));
         // Queue the byte into the reception buffer if there's any space left,
         // or drop it.
         ring_buffer_queue(rx_ring, byte);
@@ -114,7 +119,7 @@ void uart_handler(void) {
 
     if (status & STATUS_TXRDY) {
         if (ring_buffer_dequeue(tx_ring, (char *)&byte)) {
-            outb(P8251A_DATA, byte);
+            outb(P8251A_DATA(uart), byte);
         } else {
             // No more data to send, disable TX.
             cmd = CMD_RX_ENABLE;

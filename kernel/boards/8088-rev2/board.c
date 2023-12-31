@@ -40,9 +40,17 @@ struct io_device timer2 = {
         },
 };
 
+struct io_device uart = {
+    .port = 0x3f8,
+    .u.uart =
+        {
+            .irq = 4,
+        },
+};
 void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
     board_register_io_dev(IO_DEV_PIT_TIMER0, &timer0);
     board_register_io_dev(IO_DEV_PIT_TIMER1, &timer1);
     board_register_io_dev(IO_DEV_PIT_TIMER2, &timer2);
+    board_register_io_dev(IO_DEV_UART, &uart);
 }
