@@ -16,6 +16,7 @@
 #define INT_IRQ5 (IDT_IRQ_OFFSET + 5)
 #define INT_IRQ6 (IDT_IRQ_OFFSET + 6)
 #define INT_IRQ7 (IDT_IRQ_OFFSET + 7)
+#define IRQ_TO_INTERRUPT(irq) (IDT_IRQ_OFFSET + irq)
 
 // Values defined to mask an unmask IRQs
 #define MASK_IRQ0 0

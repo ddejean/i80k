@@ -26,16 +26,9 @@
 #define IDT_IRQ_OFFSET 32
 
 // IO ports
-#define PORT_PIT 0x40
 #define PORT_DEBUG 0x80
 #define PORT_UART 0x3F8
 
-// PIT clock frequency: 1.25Mhz
-#define PIT_FREQ 1250000U
-// The clock counter defines how many periods the counter has to wait before
-// firing and interrupt. The PIT clock frequency is 1.25Mhz and we want it to
-// fire every 20 ms.
-#define CLOCK_COUNTER (PIT_FREQ / 50)
 // The clock increment is the count of ms spent between each interrupt.
 #define CLOCK_INC_MS 20
 

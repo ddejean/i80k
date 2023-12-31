@@ -74,7 +74,8 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     tx_ring = txq;
     // Configure the PIT to provide the frequency matching the desired baud
     // rate.
-    pit_freq_gen(PIT_TIMER2, baud_rate);
+    struct io_device *timer2 = board_get_io_dev(IO_DEV_PIT_TIMER2);
+    pit_freq_gen(timer2, baud_rate);
     // According to the datasheet, the chip might be in an unknown configuration
     // state after power up. Complete the worst case scenarion initialization
     // sequence and manually reset the chip to ensure we're in the right state.

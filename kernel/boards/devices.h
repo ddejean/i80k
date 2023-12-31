@@ -8,11 +8,21 @@
 // IO devices categories.
 typedef enum _io_device_t {
     IO_DEV_PIC_MASTER = 0,
+    IO_DEV_PIT_TIMER0,
+    IO_DEV_PIT_TIMER1,
+    IO_DEV_PIT_TIMER2,
     IO_DEV_MAX,
 } io_device_t;
 
 struct io_device {
     uint16_t port;
+    union {
+        struct {
+            int index;
+            int irq;
+            unsigned long freq;
+        } timer;
+    } u;
 };
 
 // board_register_io_dev registers an I/O device in the devices set. Returns 0
