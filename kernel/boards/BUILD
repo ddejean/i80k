@@ -19,6 +19,14 @@ config_setting(
     ],
 )
 
+config_setting(
+    name = "8088-vboard",
+    constraint_values = [
+        "//platforms/cpu:8088",
+        "//platforms/board:vboard",
+    ],
+)
+
 cc_library(
     name = "board",
     srcs = glob([
@@ -27,6 +35,7 @@ cc_library(
     ]) + select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:srcs"],
         ":8088-rev3": ["//kernel/boards/8088-rev3:srcs"],
+        ":8088-vboard": ["//kernel/boards/vboard:srcs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     hdrs = glob([
@@ -34,11 +43,13 @@ cc_library(
     ]) + select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:hdrs"],
         ":8088-rev3": ["//kernel/boards/8088-rev3:hdrs"],
+        ":8088-vboard": ["//kernel/boards/vboard:hdrs"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     includes = ["."] + select({
         ":8088-rev2": ["8088-rev2"],
         ":8088-rev3": ["8088-rev3"],
+        ":8088-vboard": ["vboard"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     deps = [
@@ -54,6 +65,7 @@ filegroup(
     srcs = select({
         ":8088-rev2": ["//kernel/boards/8088-rev2:lds"],
         ":8088-rev3": ["//kernel/boards/8088-rev3:lds"],
+        ":8088-vboard": ["//kernel/boards/vboard:lds"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )

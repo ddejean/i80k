@@ -21,3 +21,13 @@ platform(
         "//platforms/board:rev3",
     ],
 )
+
+platform(
+    name = "8088-vboard",
+    constraint_values = [
+        "@platforms//os:none",
+        "//platforms/cpu:ia16",
+        "//platforms/cpu:8088",
+        "//platforms/board:vboard",
+    ],
+)

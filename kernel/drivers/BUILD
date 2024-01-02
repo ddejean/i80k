@@ -22,11 +22,23 @@ filegroup(
     ],
 )
 
+# Drivers for the board revision 3.
+filegroup(
+    name = "srcs-vboard",
+    srcs = [
+        "p8254.c",
+        "p8259a.c",
+        "pc16550.c",
+        "uart_int.S",
+    ],
+)
+
 cc_library(
     name = "drivers",
     srcs = select({
         "//platforms/board:rev2": [":srcs-rev2"],
         "//platforms/board:rev3": [":srcs-rev3"],
+        "//platforms/board:vboard": [":srcs-vboard"],
     }),
     hdrs = glob(["include/*.h"]),
     includes = ["include/"],

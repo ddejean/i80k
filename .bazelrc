@@ -18,3 +18,12 @@ build:8088-rev3 --features=extra_warnings
 build:8088-rev3 --features=treat_warnings_as_errors
 build:8088-rev3 --features=tiny_memory_model
 build:8088-rev3 --copt="-O2"
+
+# Virtual board build configuration.
+build:vboard --incompatible_enable_cc_toolchain_resolution
+build:vboard --platforms=//platforms:8088-vboard
+build:vboard --features=all_warnings
+build:vboard --features=extra_warnings
+build:vboard --features=treat_warnings_as_errors
+build:vboard --features=tiny_memory_model
+build:vboard --copt="-O2"
