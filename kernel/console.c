@@ -20,16 +20,26 @@ static ring_buffer_t rx_ring;
 static char tx_buf[RINGBUF_SIZE];
 // TX ring buffer instance.
 static ring_buffer_t tx_ring;
+// Tells if the UART is binded to the console.
+static int binded;
+
+static inline void console_start_xmit(void) {
+    if (binded) {
+        uart_start_xmit();
+    }
+}
 
 void console_initialize(void) {
     ring_buffer_init(&rx_ring, rx_buf, sizeof(rx_buf));
     ring_buffer_init(&tx_ring, tx_buf, sizeof(tx_buf));
+    binded = 0;
 }
 
 void console_bind_uart(void) {
     uart_initialize(&rx_ring, &tx_ring, 38400);
+    binded = 1;
     if (!ring_buffer_is_empty(&tx_ring)) {
-        uart_start_xmit();
+        console_start_xmit();
     }
 }
 
@@ -38,7 +48,7 @@ int console_putchar(int c) {
         ring_buffer_queue(&tx_ring, '\r');
     }
     ring_buffer_queue(&tx_ring, (const char)c);
-    uart_start_xmit();
+    console_start_xmit();
     return 1;
 }
 
@@ -49,7 +59,7 @@ int console_puts(const char *s) {
     len = strlen(s);
     ring_buffer_queue_arr(&tx_ring, s, len);
     ring_buffer_queue_arr(&tx_ring, br, sizeof(br));
-    uart_start_xmit();
+    console_start_xmit();
     return len + sizeof(br);
 }
 
