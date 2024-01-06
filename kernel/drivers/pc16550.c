@@ -142,11 +142,11 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     outb(PC16550_MCR(uart), MCR_RTS);
 
     // Hook up the interrupt handler.
-    interrupts_handle(IRQ_TO_INTERRUPT(uart->u.uart.irq), uart_int_handler);
+    interrupts_handle(IRQ_TO_INTERRUPT(uart->irq), uart_int_handler);
     // Unmask the UART interrupt.
-    irq_enable(uart->u.uart.irq);
+    irq_enable(uart->irq);
 
-    printf("UART: baudrate: %u, using IRQ %d\n", baud_rate, uart->u.uart.irq);
+    printf("UART: baudrate: %u, using IRQ %d\n", baud_rate, uart->irq);
 }
 
 void uart_handler(void) {
@@ -206,7 +206,7 @@ void uart_handler(void) {
     }
 
     // Acknoledge the interrupt controller.
-    irq_ack();
+    irq_ack(uart->irq);
 }
 
 void uart_start_xmit(void) {

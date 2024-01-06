@@ -60,12 +60,12 @@ void clock_initialize(void) {
 
     // Prepare the system to regularly count.
     ticks = 0;
-    interrupts_handle(IRQ_TO_INTERRUPT(timer0->u.timer.irq), clock_int_handler);
+    interrupts_handle(IRQ_TO_INTERRUPT(timer0->irq), clock_int_handler);
     pit_set_alarm(timer0, timer0->u.timer.freq / 100);
-    irq_enable(timer0->u.timer.irq);
+    irq_enable(timer0->irq);
 
     printf("Clock: frequency: %luHz, period: %dms, using IRQ %d\n",
-           timer0->u.timer.freq, CLOCK_INC_MS, timer0->u.timer.irq);
+           timer0->u.timer.freq, CLOCK_INC_MS, timer0->irq);
 }
 
 unsigned long clock_now(void) {

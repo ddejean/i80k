@@ -39,6 +39,6 @@ void irq_enable(int irq);
 void irq_disable(int irq);
 
 // irq_ack() acknowledges an external interrupt to the controler.
-void irq_ack(void);
+void irq_ack(int irq);
 
 #endif  // _IRQ_H_

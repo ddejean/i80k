@@ -7,44 +7,45 @@
 // PIC definition.
 struct io_device pic = {
     .port = 0x20,
+    .irq = -1,
 };
 
 // PIT timers definition.
 struct io_device timer0 = {
     .port = 0x40,
+    .irq = 0,
     .u.timer =
         {
             .index = 0,
-            .irq = 0,
             .freq = 2457600U,
         },
 };
 
 struct io_device timer1 = {
     .port = 0x40,
+    .irq = -1,
     .u.timer =
         {
             .index = 1,
-            .irq = -1,
             .freq = 2457600U,
         },
 };
 
 struct io_device timer2 = {
     .port = 0x40,
+    .irq = -1,
     .u.timer =
         {
             .index = 2,
-            .irq = -1,
             .freq = 2457600U,
         },
 };
 
 struct io_device uart = {
     .port = 0x3f8,
+    .irq = 4,
     .u.uart =
         {
-            .irq = 4,
             .freq = 4915200U,
         },
 };

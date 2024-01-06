@@ -91,14 +91,14 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     outb(P8251A_CMD(uart),
          MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
     // Hook up the interrupt handler.
-    interrupts_handle(IRQ_TO_INTERRUPT(uart->u.uart.irq), uart_int_handler);
+    interrupts_handle(IRQ_TO_INTERRUPT(uart->irq), uart_int_handler);
     // Unmask the UART interrupt.
-    irq_enable(uart->u.uart.irq);
+    irq_enable(uart->irq);
     // Enable RX only (TX will be enabled when bytes are ready to send).
     p8251a_cmd(CMD_RX_ENABLE | CMD_FORCE_RTS);
 
     // Print only after the UART is correctly initialized.
-    printf("UART: baudrate: %u, using IRQ %d\n", baud_rate, uart->u.uart.irq);
+    printf("UART: baudrate: %u, using IRQ %d\n", baud_rate, uart->irq);
 }
 
 void uart_handler(void) {
@@ -130,7 +130,7 @@ void uart_handler(void) {
     p8251a_cmd(cmd | CMD_FORCE_RTS);
 
     // Acknoledge the interrupt controller.
-    irq_ack();
+    irq_ack(uart->irq);
 }
 
 void uart_start_xmit(void) { p8251a_cmd(cmd | CMD_TX_ENABLE); }
