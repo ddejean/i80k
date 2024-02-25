@@ -48,6 +48,10 @@ struct io_device timer2 = {
 struct io_device uart = {
     .port = 0x3f8,
     .irq = 4,
+    .u.uart =
+        {
+            .freq = 4915200U,
+        },
 };
 
 void board_initialize() {

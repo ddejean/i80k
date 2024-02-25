@@ -7,6 +7,7 @@ go_binary(
         "vboard.go",
     ],
     deps = [
+        "//vboard/devices",
         "//vboard/kvm",
         "@org_golang_x_sys//unix",
     ],

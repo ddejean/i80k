@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"unsafe"
+	"vboard/devices"
 	"vboard/kvm"
 
 	"golang.org/x/sys/unix"
@@ -70,6 +71,10 @@ func main() {
 		log.Fatalf("failed to create interrupt controller: %v", err)
 	}
 
+	if err := vm.CreatePIT(); err != nil {
+		log.Fatalf("failed to create timer: %v", err)
+	}
+
 	vcpu, err := vm.CreateVCPU()
 	if err != nil {
 		log.Fatal("failed to create vCPU: ", err)
@@ -104,6 +109,15 @@ func main() {
 	// Create and IO mapper to match ports and devices.
 	iom := newIOMapper()
 
+	uart := devices.NewP16550(func(v uint32) {
+		if err := vm.SetIRQLine(4, v); err != nil {
+			log.Printf("failed to set IRQ line 4 to %v: %v", v, err)
+		}
+	})
+	uart.Start()
+	defer uart.Stop()
+	iom.Add(0x3f8, uart)
+
 	for {
 		if err := vcpu.Run(); err != nil {
 			log.Fatal(err)
@@ -111,6 +125,7 @@ func main() {
 		switch vcpu.Context().ExitReason {
 		case kvm.KVM_EXIT_IO:
 			if err := doIO(iom, vcpu.Context()); err != nil {
+				dumpVCPU(vcpu)
 				log.Fatal("IO failed: ", err)
 			}
 
@@ -140,4 +155,18 @@ func doIO(iom *ioMapper, run *kvm.Run) error {
 		return fmt.Errorf("invalid I/O direction %d", io.Direction)
 	}
 	return nil
+}
+
+func dumpVCPU(vcpu *kvm.VCPU) {
+	var regs kvm.Regs
+	var sregs kvm.SRegs
+
+	vcpu.GetRegs(&regs)
+	vcpu.GetSystemRegs(&sregs)
+
+	log.Printf("CPU state:")
+	log.Printf("  AX: %04x, BX: %04x, CX: %04x, DX: %04x", regs.RAX, regs.RBX, regs.RCX, regs.RDX)
+	log.Printf("  DI: %04x, SI: %04x, DS: %04x, ES: %04x", regs.RDI, regs.RSI, sregs.DS.Base, sregs.ES.Base)
+	log.Printf("  CS: %04x, IP: %04x, SS: %04x, SP: %04x", sregs.CS.Base, regs.RIP, sregs.SS.Base, regs.RSP)
+	log.Printf("  Flags: %04x", regs.RFLAGS)
 }

@@ -82,3 +82,35 @@ func (vm *VM) CreateIRQChip() error {
 	}
 	return nil
 }
+
+func (vm *VM) SetIRQLine(irq, level uint32) error {
+	irqLevel := &IRQLevel{
+		IRQ:   irq,
+		Level: level,
+	}
+	_, _, errno := unix.RawSyscall(
+		unix.SYS_IOCTL,
+		uintptr(vm.fd),
+		KVM_IRQ_LINE,
+		uintptr(unsafe.Pointer(irqLevel)))
+	if errno != 0 {
+		return fmt.Errorf("failed to set IRQ line %v to level %v: %v", irq, level, errno)
+	}
+	return nil
+}
+
+func (vm *VM) CreatePIT() error {
+	pitConfig := &PITConfig{
+		Flags: 0,
+	}
+
+	_, _, errno := unix.RawSyscall(
+		unix.SYS_IOCTL,
+		uintptr(vm.fd),
+		KVM_CREATE_PIT,
+		uintptr(unsafe.Pointer(pitConfig)))
+	if errno != 0 {
+		return fmt.Errorf("failed to create PIT: %v", errno)
+	}
+	return nil
+}

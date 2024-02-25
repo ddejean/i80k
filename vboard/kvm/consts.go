@@ -16,7 +16,8 @@ const (
 	KVM_CREATE_VCPU            = 0xae41
 	KVM_SET_USER_MEMORY_REGION = 0x4020ae46
 	KVM_CREATE_IRQCHIP         = 0xae60
-	KVM_IRQ_LINE               = 0x4020ae61
+	KVM_CREATE_PIT             = 0xae64
+	KVM_IRQ_LINE               = 0x4008ae61
 )
 
 // KVM ioctls values for vCPU fds.

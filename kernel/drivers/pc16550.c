@@ -167,7 +167,7 @@ void uart_handler(void) {
 
             case RX_FIFO_TIMEOUT:
                 // FIFO timeout implies we don't know how many bytes are
-                // available. Pull everything we can checking the status
+                // available. Pull everything while checking the status
                 // register each time.
                 status = inb(PC16550_LSR(uart));
                 while (status & LSR_DATA_READY) {

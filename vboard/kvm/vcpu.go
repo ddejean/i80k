@@ -34,6 +34,16 @@ func (c *VCPU) SetSystemRegs(sregs *SRegs) error {
 	return nil
 }
 
+func (c *VCPU) GetRegs(regs *Regs) error {
+	if _, _, errno := unix.RawSyscall(unix.SYS_IOCTL,
+		c.fd,
+		KVM_GET_REGS,
+		uintptr(unsafe.Pointer(regs))); errno != 0 {
+		return fmt.Errorf("failed to get registers: %v", errno)
+	}
+	return nil
+}
+
 func (c *VCPU) SetRegs(regs *Regs) error {
 	if _, _, errno := unix.RawSyscall(unix.SYS_IOCTL,
 		c.fd,
