@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "board.h"
+#include "cf.h"
 #include "cfi.h"
 #include "clock.h"
 #include "console.h"
@@ -48,6 +49,8 @@ void kernel(void) {
 
     // ROM storage.
     cfi_initialize();
+
+    cf_initialize();
 
     // Shell ersatz
     while (1) {

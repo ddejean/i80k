@@ -17,4 +17,8 @@
             ;                               \
     } while (0)
 
+// debug_dump dumps the |buffer| array to the console in both hex and ascii
+// form.
+void debug_dump(char *buffer, unsigned int sz);
+
 #endif  // _DEBUG_H_
