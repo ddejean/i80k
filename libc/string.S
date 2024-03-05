@@ -112,3 +112,29 @@ strnlen:
     pop     %di
     pop     %bp
     ret
+
+// int strcmp(const char *s1, const char *s2)
+.global strcmp
+strcmp:
+    push    %bp
+    mov     %sp, %bp
+    push    %si
+    mov     4(%bp), %bx
+    mov     %bx, %si
+    mov     6(%bp), %bx
+    dec     %bx
+.loop:
+    lodsb
+    inc     %bx
+    testb   %al, %al
+    jz      .quit
+    cmpb    (%bx), %al
+    je      .loop
+.quit:
+    mov     (%bx), %dl
+    xorb    %dh, %dh
+    xorb    %ah, %ah
+    sub     %dx, %ax
+    pop     %si
+    pop     %bp
+    ret

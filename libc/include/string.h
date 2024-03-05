@@ -19,4 +19,8 @@ extern size_t strlen(const char *s);
 // 0 and <maxlen>.
 extern size_t strnlen(const char *s, size_t maxlen);
 
+// strcmp compares the two strings <s1> and <s2>. Returns and integer indicating
+// the result of the comparison.
+extern int strcmp(const char *s1, const char *s2);
+
 #endif  // _STRINGS_H_
