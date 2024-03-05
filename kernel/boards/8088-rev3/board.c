@@ -50,10 +50,20 @@ struct io_device uart = {
         },
 };
 
+struct io_device cf = {
+    .port = 0x1f0,
+    .irq = 5,
+    .u.cf =
+        {
+            .is_8bit = true,
+        },
+};
+
 void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
     board_register_io_dev(IO_DEV_PIT_TIMER0, &timer0);
     board_register_io_dev(IO_DEV_PIT_TIMER1, &timer1);
     board_register_io_dev(IO_DEV_PIT_TIMER2, &timer2);
     board_register_io_dev(IO_DEV_UART, &uart);
+    board_register_io_dev(IO_DEV_CF, &cf);
 }

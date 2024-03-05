@@ -15,6 +15,9 @@ filegroup(
 filegroup(
     name = "srcs-rev3",
     srcs = [
+        "block/cf20/cf20.c",
+        "block/cf20/cf20_cmds.c",
+        "block/cf20/cf20_defs.h",
         "p8254.c",
         "p8259a.c",
         "pc16550.c",
@@ -26,6 +29,7 @@ filegroup(
 filegroup(
     name = "srcs-vboard",
     srcs = [
+        "cf20.c",
         "p8254.c",
         "p8259a.c",
         "pc16550.c",

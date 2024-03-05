@@ -3,6 +3,7 @@
 #ifndef _DEVICES_H_
 #define _DEVICES_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // IO devices categories.
@@ -13,6 +14,7 @@ typedef enum _io_device_t {
     IO_DEV_PIT_TIMER1,
     IO_DEV_PIT_TIMER2,
     IO_DEV_UART,
+    IO_DEV_CF,
     IO_DEV_MAX,
 } io_device_t;
 
@@ -27,6 +29,9 @@ struct io_device {
         struct {
             unsigned long freq;
         } uart;
+        struct {
+            bool is_8bit;
+        } cf;
     } u;
 };
 

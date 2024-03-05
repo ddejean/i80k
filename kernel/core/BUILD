@@ -13,6 +13,7 @@ cc_library(
     deps = [
         "//kernel/arch",
         "//kernel/boards:board",
+        "//kernel/utils",
         "//libc:c",
     ],
 )
