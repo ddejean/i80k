@@ -4,11 +4,11 @@
 #include <stdio.h>
 
 #include "board.h"
-#include "cf.h"
 #include "cfi.h"
 #include "clock.h"
 #include "console.h"
 #include "cpu.h"
+#include "driver.h"
 #include "heap.h"
 #include "interrupts.h"
 #include "irq.h"
@@ -50,7 +50,8 @@ void kernel(void) {
     // ROM storage.
     cfi_initialize();
 
-    cf_initialize();
+    // Probe devices and instantiate the drivers.
+    driver_probes();
 
     // Shell ersatz
     while (1) {

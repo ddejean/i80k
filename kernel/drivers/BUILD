@@ -29,7 +29,6 @@ filegroup(
 filegroup(
     name = "srcs-vboard",
     srcs = [
-        "cf20.c",
         "p8254.c",
         "p8259a.c",
         "pc16550.c",
@@ -48,10 +47,26 @@ cc_library(
     includes = ["include/"],
     visibility = ["//visibility:public"],
     deps = [
+        ":libdriver",
         "//kernel/arch",
         "//kernel/boards:board",
         "//kernel/core",
         "//kernel/utils",
+        "//libc:c",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "libdriver",
+    srcs = [
+        "driver.c",
+        "driver.h",
+    ],
+    hdrs = ["driver.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
         "//libc:c",
     ],
 )

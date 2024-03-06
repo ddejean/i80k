@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "cf20.h"
 #include "cf20_defs.h"
 #include "cpu.h"
 
