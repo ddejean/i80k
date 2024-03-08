@@ -15,9 +15,6 @@ filegroup(
 filegroup(
     name = "srcs-rev3",
     srcs = [
-        "block/cf20/cf20.c",
-        "block/cf20/cf20_cmds.c",
-        "block/cf20/cf20_defs.h",
         "p8254.c",
         "p8259a.c",
         "pc16550.c",
@@ -36,6 +33,11 @@ filegroup(
     ],
 )
 
+board_rev3_drivers = [
+    "//kernel/drivers/block/cfi",
+    "//kernel/drivers/block/cf20",
+]
+
 cc_library(
     name = "drivers",
     srcs = select({
@@ -45,7 +47,7 @@ cc_library(
     }),
     hdrs = glob(["include/*.h"]),
     includes = ["include/"],
-    visibility = ["//visibility:public"],
+    visibility = ["//kernel:__pkg__"],
     deps = [
         ":libdriver",
         "//kernel/arch",
@@ -53,7 +55,9 @@ cc_library(
         "//kernel/core",
         "//kernel/utils",
         "//libc:c",
-    ],
+    ] + select({
+        "//platforms/board:rev3": board_rev3_drivers,
+    }),
     alwayslink = True,
 )
 
@@ -65,7 +69,10 @@ cc_library(
     ],
     hdrs = ["driver.h"],
     includes = ["."],
-    visibility = ["//visibility:public"],
+    visibility = [
+        ":__subpackages__",
+        "//kernel:__pkg__",
+    ],
     deps = [
         "//libc:c",
     ],

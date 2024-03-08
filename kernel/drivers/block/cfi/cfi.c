@@ -1,6 +1,4 @@
-// Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
-
-#include "cfi.h"
+// Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
 #include <stdint.h>
 #include <stdio.h>
@@ -8,7 +6,6 @@
 
 #include "blkdev.h"
 #include "board.h"
-#include "clock.h"
 #include "devices.h"
 #include "driver.h"
 #include "mem.h"
@@ -89,7 +86,6 @@ static void cfi_toggle_wait(volatile u8_fptr_t addr) {
     do {
         byte0 = *addr;
         byte1 = *addr;
-        udelay(1);
     } while ((byte0 & CFI_TOGGLE_BIT) != (byte1 & CFI_TOGGLE_BIT));
 }
 
