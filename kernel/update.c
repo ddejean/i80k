@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 #include "board.h"
-#include "cfi.h"
 #include "clock.h"
 #include "cpu.h"
 #include "mem.h"
@@ -20,9 +19,9 @@ static uint8_t payload[XMODEM_MAX_PACKET_SIZE];
 // to ease the manipulation of the segment:address couple.
 static uint32_t dst = 0x80000;
 
-static inline void dst_split(uint32_t dst, uint16_t *seg, char **addr) {
+static inline void dst_split(uint32_t dst, uint16_t *seg, uint8_t **addr) {
     *seg = (uint16_t)((dst & 0xf0000) >> 4);
-    *addr = (char *)(uint16_t)(dst & 0xffff);
+    *addr = (uint8_t *)(uint16_t)(dst & 0xffff);
 }
 
 void tx_byte(struct xmodem_server *xdm, uint8_t byte, void *cb_data) {
@@ -50,12 +49,12 @@ void update(void) {
             xmodem_server_process(&server, payload, &block_num, clock_now());
         if (rx_data_len > 0) {
             uint16_t seg;
-            char *addr;
+            uint8_t *addr;
             // Extract the segment and destination address from the 32 bits
             // address.
             dst_split(dst, &seg, &addr);
             // Copy the xmodem packet payload to the destination.
-            ksegmemcpy(addr, seg, payload, KERNEL_CS, rx_data_len);
+            ksegmemcpy(addr, seg, payload, KERNEL_DS, rx_data_len);
             // Increment the destination address.
             dst += rx_data_len;
             update_size += rx_data_len;
@@ -66,16 +65,8 @@ void update(void) {
         return;
     }
 
-    printf("Erasing flash ROM...\n");
-    cfi_chip_erase();
+    // TODO: write to the flash using the block devices interface.
 
-    printf("Writing ROM update...\n");
-    for (uint32_t offset = 0; offset < update_size; offset++) {
-        volatile uint8_t __far *src =
-            (volatile uint8_t __far *)(0x80000000 + ((offset & 0xf0000) << 12) +
-                                       (offset & 0xffff));
-        cfi_write(offset, *src);
-    }
     printf("\ndone.\n");
     printf("Rebooting now.\n");
     reboot();

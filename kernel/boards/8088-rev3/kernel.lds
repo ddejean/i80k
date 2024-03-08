@@ -42,6 +42,9 @@ SECTIONS {
     .data : ALIGN(4) {
         _data_start = .;
         *(.rodata*);
+        _devices_start = .;
+        *(.devices);
+        _devices_end = .;
         _drivers_start = .;
         *(.drivers);
         _drivers_end = .;

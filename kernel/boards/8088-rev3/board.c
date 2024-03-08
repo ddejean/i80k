@@ -59,6 +59,16 @@ struct io_device cf = {
         },
 };
 
+struct cfi_flash rom = {
+    .vendor_id = 0xbf,        // Manufacturer SST
+    .chip_id = 0xb5,          // Chip SST39SF010A
+    .base_addr = 0xE0000000,  // ROM is located at address E000:0000.
+    .sector_count = 32,
+    .sector_size = 4096,
+};
+
+DEVICE(rom, cfi, rom);
+
 void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
     board_register_io_dev(IO_DEV_PIT_TIMER0, &timer0);

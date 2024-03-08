@@ -2,19 +2,22 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
+#include "blkdev.h"
 #include "board.h"
-#include "cfi.h"
 #include "clock.h"
 #include "console.h"
 #include "cpu.h"
+#include "debug.h"
 #include "driver.h"
 #include "heap.h"
 #include "interrupts.h"
 #include "irq.h"
-#include "mem.h"
 #include "syscall.h"
 #include "update.h"
+
+uint8_t buf[4096];
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
@@ -46,9 +49,6 @@ void kernel(void) {
 
     // Initialize the clock system.
     clock_initialize();
-
-    // ROM storage.
-    cfi_initialize();
 
     // Probe devices and instantiate the drivers.
     driver_probes();
