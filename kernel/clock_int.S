@@ -14,6 +14,12 @@
 clock_int_handler:
     // Save the only register we'll use.
     push %ax
+    push %ds
+    push %es
+    // Set kernel data segment.
+    mov $KERNEL_DS, %ax
+    mov %ax, %ds
+    mov %ax, %es
     // Ack the interrupt controller.
     movb $0x20, %al
     outb %al, $0x20
@@ -31,6 +37,8 @@ clock_int_handler:
     mov %ax, ticks+2
 _done:
     // Restore the touched register.
+    pop %es
+    pop %ds
     pop %ax
     // Return from interrupt.
     iret
