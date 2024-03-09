@@ -17,3 +17,17 @@ cc_library(
         "//libc:c",
     ],
 )
+
+cc_test(
+    name = "blkdev_test",
+    size = "small",
+    srcs = [
+        "blkdev.c",
+        "blkdev.h",
+        "blkdev_test.cc",
+    ],
+    deps = [
+        "//kernel/utils",
+        "@googletest//:gtest_main",
+    ],
+)

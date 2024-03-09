@@ -31,7 +31,19 @@ struct blkdev {
 // blk_register registers |dev| as a block device.
 void blk_register(struct blkdev *dev);
 
+// blk_unregister removes the device |name| from the block device system and
+// returns it.
+struct blkdev *blk_unregister(const char *name);
+
 // blk_open returns the block device associated with |name|.
 struct blkdev *blk_open(const char *name);
 
+int blk_read_block(struct blkdev *dev, void *buf, uint32_t block,
+                   unsigned int count);
+
+int blk_write_block(struct blkdev *dev, void *buf, uint32_t block,
+                    unsigned int count);
+
+unsigned int blk_block_trim_range(struct blkdev *dev, uint32_t block,
+                                  unsigned int count);
 #endif  // _BLKDEV_H_
