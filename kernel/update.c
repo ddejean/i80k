@@ -8,7 +8,7 @@
 #include "board.h"
 #include "clock.h"
 #include "cpu.h"
-#include "mem.h"
+#include "fmem.h"
 #include "third_party/async_xmodem/xmodem_server.h"
 
 // Xmodem server instance.
@@ -54,7 +54,8 @@ void update(void) {
             // address.
             dst_split(dst, &seg, &addr);
             // Copy the xmodem packet payload to the destination.
-            ksegmemcpy(addr, seg, payload, KERNEL_DS, rx_data_len);
+            fmemcpy(fmem_void_fptr(seg, addr),
+                    fmem_void_fptr(KERNEL_DS, payload), rx_data_len);
             // Increment the destination address.
             dst += rx_data_len;
             update_size += rx_data_len;

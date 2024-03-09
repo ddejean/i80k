@@ -8,7 +8,7 @@
 #include "board.h"
 #include "devices.h"
 #include "driver.h"
-#include "mem.h"
+#include "fmem.h"
 
 // Manufacturer ID list.
 #define CFI_VENDOR_SST 0xBF
@@ -33,9 +33,6 @@
 
 #define CFI_TOGGLE_BIT (1 << 6)
 #define CFI_POLLING_BIT (1 << 7)
-
-// Far pointer helper to manage the flash mapped memory.
-typedef uint8_t __far *u8_fptr_t;
 
 static char *cfi_sst_device(uint8_t id) {
     switch (id) {
@@ -126,11 +123,8 @@ int cfi_read_block(struct blkdev *dev, void *buf, uint32_t block,
     uint8_t *buffer = buf;
     for (unsigned int i = 0; i < count; i++) {
         volatile u8_fptr_t addr = cfi_get_block_addr(dev, block + i);
-        for (unsigned int j = 0; j < dev->block_size; j++) {
-            *buffer = *addr;
-            addr++;
-            buffer++;
-        }
+        fmemcpy(fmem_void_fptr(KERNEL_DS, buffer), addr, dev->block_size);
+        buffer += dev->block_size;
     }
 
     return 0;

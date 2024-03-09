@@ -4,9 +4,9 @@
 
 .section .text
 
-// ksegmemcpy(void *dst, uint16_t dst_seg, void *src, uint16_t src_seg, size_t n)
-.global ksegmemcpy
-ksegmemcpy:
+// void fmemcpy(void __far* dst, void __far* src, size_t n);
+.global fmemcpy
+fmemcpy:
     push    %bp
     mov     %sp, %bp
     // Save registers.
