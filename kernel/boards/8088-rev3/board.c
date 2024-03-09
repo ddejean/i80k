@@ -50,15 +50,6 @@ struct io_device uart = {
         },
 };
 
-struct io_device cf = {
-    .port = 0x1f0,
-    .irq = 5,
-    .u.cf =
-        {
-            .is_8bit = true,
-        },
-};
-
 struct cfi_flash rom = {
     .vendor_id = 0xbf,        // Manufacturer SST
     .chip_id = 0xb5,          // Chip SST39SF010A
@@ -69,11 +60,18 @@ struct cfi_flash rom = {
 
 DEVICE(rom, cfi, rom);
 
+struct cf20 cf = {
+    .port = 0x1f0,
+    .irq = 5,
+    .is_8bit = true,
+};
+
+DEVICE(compactflash, cf20, cf);
+
 void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
     board_register_io_dev(IO_DEV_PIT_TIMER0, &timer0);
     board_register_io_dev(IO_DEV_PIT_TIMER1, &timer1);
     board_register_io_dev(IO_DEV_PIT_TIMER2, &timer2);
     board_register_io_dev(IO_DEV_UART, &uart);
-    board_register_io_dev(IO_DEV_CF, &cf);
 }

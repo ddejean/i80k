@@ -14,7 +14,6 @@ typedef enum _io_device_t {
     IO_DEV_PIT_TIMER1,
     IO_DEV_PIT_TIMER2,
     IO_DEV_UART,
-    IO_DEV_CF,
     IO_DEV_MAX,
 } io_device_t;
 
@@ -29,9 +28,6 @@ struct io_device {
         struct {
             unsigned long freq;
         } uart;
-        struct {
-            bool is_8bit;
-        } cf;
     } u;
 };
 
@@ -44,6 +40,15 @@ struct cfi_flash {
     unsigned int sector_count;
     // Size of a sector in bytes.
     unsigned int sector_size;
+};
+
+struct cf20 {
+    // Base I/O port.
+    uint16_t port;
+    // IRQ the device is mapped to.
+    int irq;
+    // Weither the device is mapped on a 8 bits bus.
+    bool is_8bit;
 };
 
 // Device description pulled by a driver while probing.
