@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com> */
+/* Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com> */
 
 OUTPUT_FORMAT(binary)
 
@@ -42,6 +42,12 @@ SECTIONS {
     .data : ALIGN(4) {
         _data_start = .;
         *(.rodata*);
+        _devices_start = .;
+        *(.devices);
+        _devices_end = .;
+        _drivers_start = .;
+        *(.drivers);
+        _drivers_end = .;
         *(.data*);
 
         /* See comment in previous section. */

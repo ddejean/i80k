@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com> */
+/* Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com> */
 
 OUTPUT_FORMAT(binary)
 

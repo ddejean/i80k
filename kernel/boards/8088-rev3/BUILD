@@ -1,19 +1,24 @@
-# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+# Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
-filegroup(
-    name = "srcs",
+cc_library(
+    name = "board-rev3",
     srcs = glob([
-        "*.S",
         "*.h",
         "*.c",
+        "*.S",
     ]),
+    hdrs = glob([
+        "*.h",
+    ]),
+    includes = ["."],
     visibility = ["//kernel/boards:__pkg__"],
-)
-
-filegroup(
-    name = "hdrs",
-    srcs = ["board.h"],
-    visibility = ["//kernel/boards:__pkg__"],
+    deps = [
+        "//kernel/boards:libboard",
+        "//libc:c",
+    ],
+    # Required to ensure bootstrap and crt0 files are included even if their
+    # symbols are not referenced anywhere.
+    alwayslink = True,
 )
 
 filegroup(

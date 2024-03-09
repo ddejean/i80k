@@ -1,6 +1,4 @@
-# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
-
-package(default_visibility = ["//visibility:public"])
+# Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
 # Build configuration for the 8088 board revision 2.
 config_setting(
@@ -11,6 +9,7 @@ config_setting(
     ],
 )
 
+# Build configuration for the 8088 board revision 3.
 config_setting(
     name = "8088-rev3",
     constraint_values = [
@@ -19,6 +18,7 @@ config_setting(
     ],
 )
 
+# Build configuration for the 8088 virtual board.
 config_setting(
     name = "8088-vboard",
     constraint_values = [
@@ -29,35 +29,32 @@ config_setting(
 
 cc_library(
     name = "board",
-    srcs = glob([
-        "*.h",
-        "*.c",
-    ]) + select({
-        ":8088-rev2": ["//kernel/boards/8088-rev2:srcs"],
-        ":8088-rev3": ["//kernel/boards/8088-rev3:srcs"],
-        ":8088-vboard": ["//kernel/boards/vboard:srcs"],
+    visibility = ["//kernel:__subpackages__"],
+    deps = select({
+        ":8088-rev2": ["//kernel/boards/8088-rev2:board-rev2"],
+        ":8088-rev3": ["//kernel/boards/8088-rev3:board-rev3"],
+        ":8088-vboard": ["//kernel/boards/vboard:board-vboard"],
         "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    hdrs = glob([
-        "*.h",
-    ]) + select({
-        ":8088-rev2": ["//kernel/boards/8088-rev2:hdrs"],
-        ":8088-rev3": ["//kernel/boards/8088-rev3:hdrs"],
-        ":8088-vboard": ["//kernel/boards/vboard:hdrs"],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    includes = ["."] + select({
-        ":8088-rev2": ["8088-rev2"],
-        ":8088-rev3": ["8088-rev3"],
-        ":8088-vboard": ["vboard"],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-    deps = [
-        "//libc:c",
+    }) + [
+        ":libboard",
     ],
     # Required to ensure bootstrap and crt0 files are included even if their
     # symbols are not referenced anywhere.
     alwayslink = True,
+)
+
+cc_library(
+    name = "libboard",
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]),
+    hdrs = glob([
+        "*.h",
+    ]),
+    includes = ["."],
+    visibility = [":__subpackages__"],
+    deps = ["//libc:c"],
 )
 
 filegroup(
@@ -68,4 +65,5 @@ filegroup(
         ":8088-vboard": ["//kernel/boards/vboard:lds"],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    visibility = ["//kernel:__pkg__"],
 )

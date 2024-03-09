@@ -57,6 +57,7 @@ cc_library(
         "//libc:c",
     ] + select({
         "//platforms/board:rev3": board_rev3_drivers,
+        "//conditions:default": [],
     }),
     alwayslink = True,
 )
