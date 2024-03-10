@@ -10,9 +10,6 @@
 typedef enum _io_device_t {
     IO_DEV_PIC_MASTER = 0,
     IO_DEV_PIC_SLAVE,
-    IO_DEV_PIT_TIMER0,
-    IO_DEV_PIT_TIMER1,
-    IO_DEV_PIT_TIMER2,
     IO_DEV_UART,
     IO_DEV_MAX,
 } io_device_t;
@@ -21,10 +18,6 @@ struct io_device {
     uint16_t port;
     int irq;
     union {
-        struct {
-            int index;
-            unsigned long freq;
-        } timer;
         struct {
             unsigned long freq;
         } uart;
@@ -66,7 +59,7 @@ struct device {
 #define __ex_concat(a, b) a##b
 
 #define DEVICE(name_, driver_, config_)          \
-    const struct device concat(__name_, driver_) \
+    const struct device concat(name_, driver_)   \
         __attribute__((section(".devices"))) = { \
             .name = #name_,                      \
             .driver = #driver_,                  \
@@ -83,5 +76,8 @@ struct io_device *board_get_io_dev(io_device_t type);
 
 // board_get_by_driver returns the device matching the driver name <name>.
 const struct device *board_get_by_driver(const char *name);
+
+// board_get_by_name returns the device named <name>.
+const struct device *board_get_by_name(const char *name);
 
 #endif  // _DEVICES_H_

@@ -45,13 +45,16 @@ cc_library(
 
 cc_library(
     name = "libboard",
-    srcs = glob([
-        "*.h",
-        "*.c",
-    ]),
-    hdrs = glob([
-        "*.h",
-    ]),
+    srcs = [
+        "devices.c",
+        "devices.h",
+        "timer.c",
+        "timer.h",
+    ],
+    hdrs = [
+        "devices.h",
+        "timer.h",
+    ],
     includes = ["."],
     visibility = [":__subpackages__"],
     deps = ["//libc:c"],

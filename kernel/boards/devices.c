@@ -15,7 +15,9 @@ int board_register_io_dev(io_device_t type, struct io_device *dev) {
     return 0;
 }
 
-struct io_device *board_get_io_dev(io_device_t type) { return devices[type]; }
+struct io_device *board_get_io_dev(io_device_t type) {
+    return devices[type];
+}
 
 // Start of the devices declarations array, filled by the linker.
 extern const struct device _devices_start[];
@@ -29,6 +31,19 @@ const struct device *board_get_by_driver(const char *name) {
     for (const struct device *dev = _devices_start; dev != _devices_end;
          dev++) {
         if (!strcmp(name, dev->driver)) {
+            return dev;
+        }
+    }
+    return NULL;
+}
+
+const struct device *board_get_by_name(const char *name) {
+    if (!name) {
+        return NULL;
+    }
+    for (const struct device *dev = _devices_start; dev != _devices_end;
+         dev++) {
+        if (!strcmp(name, dev->name)) {
             return dev;
         }
     }

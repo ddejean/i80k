@@ -1,12 +1,12 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
+#include "p8254.h"
+
 #include <stdint.h>
 #include <stdio.h>
 
-#include "board.h"
 #include "cpu.h"
 #include "devices.h"
-#include "pit.h"
 
 #define PIT_COUNTER(dev, t) (dev->port | (uint8_t)t)
 #define PIT_MODE(dev) (dev->port | 3)
@@ -25,43 +25,40 @@
 #define MODE_BOTH_BYTES (3 << 4)
 #define MODE_COUNTER(t) (((uint8_t)t) << 6)
 
-static inline void pit_configure_counter(struct io_device *dev, uint8_t func,
-                                         uint16_t value) {
+static inline void p8254_configure_counter(struct timer *t, uint8_t func,
+                                           uint16_t value) {
     uint8_t mode, port;
 
-    mode =
-        MODE_COUNTER(dev->u.timer.index) | func | MODE_BOTH_BYTES | MODE_16BITS;
-    port = PIT_COUNTER(dev, dev->u.timer.index);
+    mode = MODE_COUNTER(t->index) | func | MODE_BOTH_BYTES | MODE_16BITS;
+    port = PIT_COUNTER(t, t->index);
 
     // Configure the counter.
-    outb(PIT_MODE(dev), mode);
+    outb(PIT_MODE(t), mode);
     outb(port, value & 0xff);
     outb(port, value >> 8);
 }
 
-void pit_set_alarm(struct io_device *dev, uint16_t counter) {
+void p8254_set_alarm(struct timer *t, uint16_t counter) {
     // Configure the counter to fire an alarm regularly.
-    pit_configure_counter(dev, MODE_RATE_GEN, counter);
+    p8254_configure_counter(t, MODE_RATE_GEN, counter);
 }
 
-void pit_freq_gen(struct io_device *dev, uint32_t freq) {
-    uint16_t divider = (uint16_t)(dev->u.timer.freq / freq);
+void p8254_set_freq(struct timer *t, uint32_t freq) {
+    uint16_t divider = (uint16_t)(t->freq / freq);
     // Configure the counter to generate a square wave with a frequency of
     // PIT_FREQ/divider.
-    pit_configure_counter(dev, MODE_SQUARE_WAVE, divider);
+    p8254_configure_counter(t, MODE_SQUARE_WAVE, divider);
 }
 
-uint16_t pit_read(struct io_device *dev) {
+uint16_t p8254_read(struct timer *t) {
     uint8_t mode, port, low, high;
-    mode = MODE_COUNTER(dev->u.timer.index) | MODE_LATCH;
-    port = PIT_COUNTER(dev, dev->u.timer.index);
+    mode = MODE_COUNTER(t->index) | MODE_LATCH;
+    port = PIT_COUNTER(t, t->index);
 
-    outb(PIT_MODE(dev), mode);
+    outb(PIT_MODE(t), mode);
     low = inb(port);
     high = inb(port);
     return high << 8 | low;
 }
 
-uint32_t pit_ns_per_tick(struct io_device *dev) {
-    return 1000000000ul / dev->u.timer.freq;
-}
+uint32_t p8254_ns_per_tick(struct timer *t) { return 1000000000ul / t->freq; }

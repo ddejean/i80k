@@ -3,42 +3,12 @@
 #include "board.h"
 
 #include "devices.h"
+#include "p8254.h"
 
 // PIC definition.
 struct io_device pic = {
     .port = 0x20,
     .irq = -1,
-};
-
-// PIT timers definition.
-struct io_device timer0 = {
-    .port = 0x40,
-    .irq = 0,
-    .u.timer =
-        {
-            .index = 0,
-            .freq = 2457600U,
-        },
-};
-
-struct io_device timer1 = {
-    .port = 0x40,
-    .irq = -1,
-    .u.timer =
-        {
-            .index = 1,
-            .freq = 2457600U,
-        },
-};
-
-struct io_device timer2 = {
-    .port = 0x40,
-    .irq = -1,
-    .u.timer =
-        {
-            .index = 2,
-            .freq = 2457600U,
-        },
 };
 
 struct io_device uart = {
@@ -49,6 +19,45 @@ struct io_device uart = {
             .freq = 4915200U,
         },
 };
+
+struct timer timer0 = {
+    .port = 0x40,
+    .irq = 0,
+    .index = 0,
+    .freq = 2457600U,
+    .ns_per_tick = p8254_ns_per_tick,
+    .read = p8254_read,
+    .set_alarm = p8254_set_alarm,
+    .set_freq = p8254_set_freq,
+};
+
+DEVICE(timer0, p8254, timer0);
+
+struct timer timer1 = {
+    .port = 0x40,
+    .irq = -1,
+    .index = 1,
+    .freq = 2457600U,
+    .ns_per_tick = p8254_ns_per_tick,
+    .read = p8254_read,
+    .set_alarm = p8254_set_alarm,
+    .set_freq = p8254_set_freq,
+};
+
+DEVICE(timer1, p8254, timer1);
+
+struct timer timer2 = {
+    .port = 0x40,
+    .irq = -1,
+    .index = 2,
+    .freq = 2457600U,
+    .ns_per_tick = p8254_ns_per_tick,
+    .read = p8254_read,
+    .set_alarm = p8254_set_alarm,
+    .set_freq = p8254_set_freq,
+};
+
+DEVICE(timer2, p8254, timer2);
 
 struct cfi_flash rom = {
     .vendor_id = 0xbf,        // Manufacturer SST
@@ -70,8 +79,5 @@ DEVICE(compactflash, cf20, cf);
 
 void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
-    board_register_io_dev(IO_DEV_PIT_TIMER0, &timer0);
-    board_register_io_dev(IO_DEV_PIT_TIMER1, &timer1);
-    board_register_io_dev(IO_DEV_PIT_TIMER2, &timer2);
     board_register_io_dev(IO_DEV_UART, &uart);
 }

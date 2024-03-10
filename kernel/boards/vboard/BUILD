@@ -14,6 +14,7 @@ cc_library(
     visibility = ["//kernel/boards:__pkg__"],
     deps = [
         "//kernel/boards:libboard",
+        "//kernel/boards/drivers:p8254",
         "//libc:c",
     ],
     # Required to ensure bootstrap and crt0 files are included even if their

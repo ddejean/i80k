@@ -9,10 +9,10 @@
 #include "devices.h"
 #include "interrupts.h"
 #include "irq.h"
-#include "pit.h"
+#include "timer.h"
 
 // I/O device used by the driver.
-static struct io_device *timer0;
+static struct timer *timer0;
 
 // Count of iterations used in the delay calibration loop.
 #define CLOCK_CAL_LOOPS 20000
@@ -35,22 +35,22 @@ void __delay(unsigned long loops) {
     } while (count > 0);
 }
 
-static unsigned long clock_calibrate(struct io_device *timer) {
+static unsigned long clock_calibrate(struct timer *timer) {
     unsigned int val;
 
     // Use the PIT to mesure the time elapsed in the iteration loop.
-    pit_set_alarm(timer, 65535);
+    timer_set_alarm(timer, 65535);
     __delay(CLOCK_CAL_LOOPS);
-    val = pit_read(timer);
+    val = timer_read(timer);
 
     // Compute the ns spent in one loop iteration using the number of ns per
     // timer tick.
-    return ((unsigned long)(65535 - val) * pit_ns_per_tick(timer)) /
+    return ((unsigned long)(65535 - val) * timer_ns_per_tick(timer)) /
            CLOCK_CAL_LOOPS;
 }
 
 void clock_initialize(void) {
-    timer0 = board_get_io_dev(IO_DEV_PIT_TIMER0);
+    timer0 = timer_get("timer0");
 
     // Calibrate the delay loop to have an effective implementation of
     // mdelay/udelay.
@@ -61,11 +61,11 @@ void clock_initialize(void) {
     // Prepare the system to regularly count.
     ticks = 0;
     interrupts_handle(IRQ_TO_INTERRUPT(timer0->irq), clock_int_handler);
-    pit_set_alarm(timer0, timer0->u.timer.freq / 100);
+    timer_set_alarm(timer0, timer0->freq / 100);
     irq_enable(timer0->irq);
 
     printf("Clock: frequency: %luHz, period: %dms, using IRQ %d\n",
-           timer0->u.timer.freq, CLOCK_INC_MS, timer0->irq);
+           timer0->freq, CLOCK_INC_MS, timer0->irq);
 }
 
 unsigned long clock_now(void) {

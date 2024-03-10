@@ -10,7 +10,6 @@
 #include "include/uart.h"
 #include "interrupts.h"
 #include "irq.h"
-#include "pit.h"
 #include "ringbuffer.h"
 
 #define PC16550_TX_FIFO_SZ 16

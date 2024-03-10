@@ -6,10 +6,11 @@
 
 #include "board.h"
 #include "cpu.h"
+#include "devices.h"
 #include "interrupts.h"
 #include "irq.h"
-#include "pit.h"
 #include "ringbuffer.h"
+#include "timer.h"
 #include "uart.h"
 
 #define P8251A_CMD(dev) (dev->port | 1)
@@ -76,8 +77,8 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     tx_ring = txq;
     // Configure the PIT to provide the frequency matching the desired baud
     // rate.
-    struct io_device *timer2 = board_get_io_dev(IO_DEV_PIT_TIMER2);
-    pit_freq_gen(timer2, baud_rate);
+    struct timer *timer2 = timer_get("timer2");
+    timer_set_freq(timer2, baud_rate);
     // Obtain the UART device.
     uart = board_get_io_dev(IO_DEV_UART);
     // According to the datasheet, the chip might be in an unknown configuration
