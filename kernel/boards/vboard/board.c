@@ -2,6 +2,7 @@
 
 #include "board.h"
 
+#include "delay.h"
 #include "devices.h"
 #include "p8254.h"
 #include "timer.h"
@@ -68,4 +69,8 @@ void board_initialize() {
     board_register_io_dev(IO_DEV_PIC_MASTER, &pic);
     board_register_io_dev(IO_DEV_PIC_SLAVE, &pic2);
     board_register_io_dev(IO_DEV_UART, &uart);
+
+    // Calibrate the delay loop.
+    struct timer *t = timer_get("timer0");
+    delay_calibrate(t);
 }

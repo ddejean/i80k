@@ -6,6 +6,7 @@
 
 #include "blkdev.h"
 #include "board.h"
+#include "delay.h"
 #include "devices.h"
 #include "driver.h"
 #include "fmem.h"
@@ -82,6 +83,9 @@ static void cfi_toggle_wait(volatile u8_fptr_t addr) {
     uint8_t byte1;
     do {
         byte0 = *addr;
+        // Add a delay between the two reads to ensure the flash has enough time
+        // to flip its bit.
+        udelay(1);
         byte1 = *addr;
     } while ((byte0 & CFI_TOGGLE_BIT) != (byte1 & CFI_TOGGLE_BIT));
 }

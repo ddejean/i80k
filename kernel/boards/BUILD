@@ -46,12 +46,15 @@ cc_library(
 cc_library(
     name = "libboard",
     srcs = [
+        "delay.c",
+        "delay.h",
         "devices.c",
         "devices.h",
         "timer.c",
         "timer.h",
     ],
     hdrs = [
+        "delay.h",
         "devices.h",
         "timer.h",
     ],
