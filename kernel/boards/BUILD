@@ -45,22 +45,19 @@ cc_library(
 
 cc_library(
     name = "libboard",
-    srcs = [
-        "delay.c",
-        "delay.h",
-        "devices.c",
-        "devices.h",
-        "timer.c",
-        "timer.h",
-    ],
-    hdrs = [
-        "delay.h",
-        "devices.h",
-        "timer.h",
-    ],
+    srcs = glob([
+        "*.c",
+        "*.h",
+    ]),
+    hdrs = glob([
+        "*.h",
+    ]),
     includes = ["."],
     visibility = [":__subpackages__"],
-    deps = ["//libc:c"],
+    deps = [
+        "//kernel/arch",
+        "//libc:c",
+    ],
 )
 
 filegroup(

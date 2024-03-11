@@ -15,6 +15,7 @@ cc_library(
     deps = [
         "//kernel/boards:libboard",
         "//kernel/boards/drivers:p8254",
+        "//kernel/boards/drivers:p8259a",
         "//libc:c",
     ],
     # Required to ensure bootstrap and crt0 files are included even if their

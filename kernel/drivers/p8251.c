@@ -8,7 +8,6 @@
 #include "cpu.h"
 #include "devices.h"
 #include "interrupts.h"
-#include "irq.h"
 #include "ringbuffer.h"
 #include "timer.h"
 #include "uart.h"
@@ -92,7 +91,8 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     outb(P8251A_CMD(uart),
          MODE_ASYNC_1 | CHAR_8BITS | PARITY_DISABLED | STOP_1BIT);
     // Hook up the interrupt handler.
-    interrupts_handle(IRQ_TO_INTERRUPT(uart->irq), uart_int_handler);
+    interrupts_handle(interrupts_from_irq(uart->irq), KERNEL_CS,
+                      uart_int_handler);
     // Unmask the UART interrupt.
     irq_enable(uart->irq);
     // Enable RX only (TX will be enabled when bytes are ready to send).

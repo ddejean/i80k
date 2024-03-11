@@ -14,8 +14,8 @@ extern void int21_handler(void);
 extern void int80_handler(void);
 
 void syscall_setup(void) {
-    interrupts_handle(0x21, int21_handler);
-    interrupts_handle(0x80, int80_handler);
+    interrupts_handle(0x21, KERNEL_CS, int21_handler);
+    interrupts_handle(0x80, KERNEL_CS, int80_handler);
 }
 
 int syscall_int21(uint16_t ax, uint16_t dx) {

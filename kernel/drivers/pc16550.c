@@ -9,7 +9,6 @@
 #include "devices.h"
 #include "include/uart.h"
 #include "interrupts.h"
-#include "irq.h"
 #include "ringbuffer.h"
 
 #define PC16550_TX_FIFO_SZ 16
@@ -141,7 +140,8 @@ void uart_initialize(ring_buffer_t *rxq, ring_buffer_t *txq,
     outb(PC16550_MCR(uart), MCR_RTS);
 
     // Hook up the interrupt handler.
-    interrupts_handle(IRQ_TO_INTERRUPT(uart->irq), uart_int_handler);
+    interrupts_handle(interrupts_from_irq(uart->irq), KERNEL_CS,
+                      uart_int_handler);
     // Unmask the UART interrupt.
     irq_enable(uart->irq);
 

@@ -5,7 +5,6 @@ filegroup(
     name = "srcs-rev2",
     srcs = [
         "p8251.c",
-        "p8259a.c",
         "uart_int.S",
     ],
 )
@@ -14,7 +13,6 @@ filegroup(
 filegroup(
     name = "srcs-rev3",
     srcs = [
-        "p8259a.c",
         "pc16550.c",
         "uart_int.S",
     ],
@@ -24,7 +22,6 @@ filegroup(
 filegroup(
     name = "srcs-vboard",
     srcs = [
-        "p8259a.c",
         "pc16550.c",
         "uart_int.S",
     ],

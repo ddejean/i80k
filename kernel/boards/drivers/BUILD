@@ -15,3 +15,19 @@ cc_library(
         "//libc:c",
     ],
 )
+
+cc_library(
+    name = "p8259a",
+    srcs = [
+        "p8259a.c",
+        "p8259a.h",
+    ],
+    hdrs = ["p8259a.h"],
+    includes = ["."],
+    visibility = ["//kernel/boards:__subpackages__"],
+    deps = [
+        "//kernel/arch",
+        "//kernel/boards:libboard",
+        "//libc:c",
+    ],
+)

@@ -8,7 +8,6 @@
 #include "cpu.h"
 #include "devices.h"
 #include "interrupts.h"
-#include "irq.h"
 #include "timer.h"
 
 // Kernel ticks. Marked as volatile to prevent the kernel from doing any
@@ -27,7 +26,8 @@ void clock_initialize(void) {
 
     // Prepare the system to regularly count.
     ticks = 0;
-    interrupts_handle(IRQ_TO_INTERRUPT(t->irq), clock_int_handler);
+    interrupts_handle(interrupts_from_irq(t->irq), KERNEL_CS,
+                      clock_int_handler);
     timer_set_alarm(t, t->freq / 100);
     irq_enable(t->irq);
 
