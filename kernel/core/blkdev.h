@@ -15,6 +15,8 @@ struct blkdev {
 
     // Size of a block in bytes.
     unsigned int block_size;
+    // Shift of the block size.
+    unsigned int block_shift;
     // Total number of blocks on the device.
     uint32_t block_count;
 
@@ -22,10 +24,14 @@ struct blkdev {
     void *drv_data;
 
     // Block device functions.
-    int (*read_block)(struct blkdev *dev, void *buf, uint32_t block,
-                      unsigned int count);
-    int (*write_block)(struct blkdev *dev, void *buf, uint32_t block,
-                       unsigned int count);
+    int (*read_block)(const struct blkdev *dev, void *buf, uint32_t block,
+                      size_t count);
+    int (*write_block)(const struct blkdev *dev, const void *buf,
+                       uint32_t block, size_t count);
+    int (*read)(const struct blkdev *dev, void *buf, uint32_t offset,
+                size_t len);
+    int (*write)(const struct blkdev *dev, const void *buf, uint32_t offset,
+                 size_t len);
 };
 
 // blk_register registers |dev| as a block device.
@@ -38,12 +44,27 @@ struct blkdev *blk_unregister(const char *name);
 // blk_open returns the block device associated with |name|.
 struct blkdev *blk_open(const char *name);
 
-int blk_read_block(struct blkdev *dev, void *buf, uint32_t block,
-                   unsigned int count);
+// blk_read_block reads |count| blocks starting at block |offset| from |dev|.
+// Returns the number of bytes read or a negative value on error.
+int blk_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+                   size_t count);
 
-int blk_write_block(struct blkdev *dev, void *buf, uint32_t block,
-                    unsigned int count);
+// blk_write_block writes |count| blocks starting at block |offset| to |dev|.
+// Returns the number of bytes written or a negative value on error.
+int blk_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+                    size_t count);
 
-unsigned int blk_block_trim_range(struct blkdev *dev, uint32_t block,
-                                  unsigned int count);
+// blk_read reads |len| bytes starting at bytes |offset| from |dev|.
+// Returns the number of bytes read or a negative value on error.
+int blk_read(const struct blkdev *dev, void *buf, uint32_t offset, size_t len);
+
+// blk_write writes |len| bytes starting at bytes |offset| from |dev|.
+// Returns the number of bytes written or a negative value on error.
+int blk_write(const struct blkdev *dev, const void *buf, uint32_t offset,
+              size_t len);
+
+size_t blk_block_trim_range(const struct blkdev *dev, uint32_t block,
+                            size_t count);
+size_t blk_trim_range(const struct blkdev *dev, uint32_t block, size_t count);
+
 #endif  // _BLKDEV_H_

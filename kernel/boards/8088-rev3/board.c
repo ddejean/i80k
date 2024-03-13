@@ -80,6 +80,7 @@ struct cfi_flash rom = {
     .base_addr = 0xE0000000,  // ROM is located at address E000:0000.
     .sector_count = 32,
     .sector_size = 4096,
+    .sector_shift = 12,
 };
 
 DEVICE(rom, cfi, rom);

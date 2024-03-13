@@ -1,5 +1,6 @@
 // Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,8 +11,8 @@
 #include "devices.h"
 #include "driver.h"
 
-int cf20_read_block(struct blkdev *dev, void *buf, uint32_t block,
-                    unsigned int count) {
+int cf20_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+                    size_t count) {
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 
     if (!count || count > 256 || !buf) {
@@ -27,6 +28,7 @@ int cf20_read_block(struct blkdev *dev, void *buf, uint32_t block,
          CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
     outb(pdev->regs.cmd, CMD_READ_SECTORS);
 
+    int bytes_read = 0;
     uint8_t *buffer = (uint8_t *)buf;
     for (unsigned int sector = 0; sector < count; sector++) {
         while (inb(pdev->regs.status) & SR_BSY)
@@ -37,13 +39,14 @@ int cf20_read_block(struct blkdev *dev, void *buf, uint32_t block,
         for (int byte = 0; byte < CF20_SECTOR_SIZE; byte += 2) {
             buffer[sector * CF20_SECTOR_SIZE + byte + 1] = inb(pdev->regs.data);
             buffer[sector * CF20_SECTOR_SIZE + byte] = inb(pdev->regs.data);
+            bytes_read += 2;
         }
     }
-    return 0;
+    return bytes_read;
 }
 
-int cf20_write_block(struct blkdev *dev, void *buf, uint32_t block,
-                     unsigned int count) {
+int cf20_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+                     size_t count) {
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 
     if (!count || count > 256 || !buf) {
@@ -59,6 +62,7 @@ int cf20_write_block(struct blkdev *dev, void *buf, uint32_t block,
          CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
     outb(pdev->regs.cmd, CMD_WRITE_SECTORS);
 
+    int bytes_written = 0;
     uint8_t *buffer = (uint8_t *)buf;
     for (unsigned int sector = 0; sector < count; sector++) {
         while (inb(pdev->regs.status) & SR_BSY)
@@ -69,9 +73,10 @@ int cf20_write_block(struct blkdev *dev, void *buf, uint32_t block,
         for (int byte = 0; byte < CF20_SECTOR_SIZE; byte += 2) {
             outb(pdev->regs.data, buffer[sector * CF20_SECTOR_SIZE + byte + 1]);
             outb(pdev->regs.data, buffer[sector * CF20_SECTOR_SIZE + byte]);
+            bytes_written += 2;
         }
     }
-    return 0;
+    return bytes_written;
 }
 
 bool cf20_probe(void) {
@@ -152,6 +157,7 @@ bool cf20_probe(void) {
 
     dev->name = "sda";
     dev->block_size = CF20_SECTOR_SIZE;
+    dev->block_shift = CF20_SECTOR_SHIFT;
     dev->block_count = cf_id->cur_capacity;
     dev->drv_data = pdev;
     dev->read_block = cf20_read_block;

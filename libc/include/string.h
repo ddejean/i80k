@@ -10,7 +10,7 @@
 extern void *memset(void *dst, int value, size_t count);
 
 // memcpy copies <count> bytes from <src> to <dst>.
-extern void *memcpy(void *dst, void *src, size_t count);
+extern void *memcpy(void *dst, const void *src, size_t count);
 
 // strnlen returns the number of chars pointed by s (final '\0' excluded).
 extern size_t strlen(const char *s);

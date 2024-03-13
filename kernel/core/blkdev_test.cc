@@ -8,6 +8,7 @@ extern "C" {
 
 #define TEST_BLOCK_SZ 16
 #define TEST_BLOCK_CNT 4
+#define TEST_FULL_SZ (TEST_BLOCK_CNT * TEST_BLOCK_SZ)
 
 // Test device names.
 char dev0_name[] = "dev0";
@@ -15,37 +16,44 @@ char dev1_name[] = "dev1";
 
 class FakeDev {
    public:
-    FakeDev() : block_read(false), block_write(false) {}
+    FakeDev() : block_read(false), block_write(false) {
+        for (int i = 0; i < TEST_FULL_SZ; i++) {
+            this->buffer[i] = (uint8_t)i;
+        }
+    }
 
-    int BlockRead(void *buf, uint32_t block, unsigned int count);
-    int BlockWrite(void *buf, uint32_t block, unsigned int count);
+    int BlockRead(void *buf, uint32_t block, size_t count);
+    int BlockWrite(const void *buf, uint32_t block, size_t count);
     bool has_block_read() const { return block_read; }
     bool has_block_write() const { return block_write; }
 
    private:
     bool block_read;
     bool block_write;
+    uint8_t buffer[TEST_FULL_SZ];
 };
 
-int FakeDev::BlockRead(void *buf, uint32_t block, unsigned int count) {
+int FakeDev::BlockRead(void *buf, uint32_t block, size_t count) {
     block_read = true;
-    return count;
+    memcpy(buf, &(this->buffer[block * TEST_BLOCK_SZ]), count * TEST_BLOCK_SZ);
+    return count * TEST_BLOCK_SZ;
 }
 
-int FakeDev::BlockWrite(void *buf, uint32_t block, unsigned int count) {
+int FakeDev::BlockWrite(const void *buf, uint32_t block, size_t count) {
     block_write = true;
-    return count;
+    memcpy(&(this->buffer[block * TEST_BLOCK_SZ]), buf, count * TEST_BLOCK_SZ);
+    return count * TEST_BLOCK_SZ;
 }
 
-extern "C" int testReadBlock(struct blkdev *dev, void *buf, uint32_t block,
-                             unsigned int count) {
-    FakeDev *fd = static_cast<FakeDev *>(dev->drv_data);
+extern "C" int testReadBlock(const struct blkdev *dev, void *buf,
+                             uint32_t block, size_t count) {
+    FakeDev *fd = reinterpret_cast<FakeDev *>(dev->drv_data);
     return fd->BlockRead(buf, block, count);
 }
 
-extern "C" int testWriteBlock(struct blkdev *dev, void *buf, uint32_t block,
-                              unsigned int count) {
-    FakeDev *fd = static_cast<FakeDev *>(dev->drv_data);
+extern "C" int testWriteBlock(const struct blkdev *dev, const void *buf,
+                              uint32_t block, size_t count) {
+    FakeDev *fd = reinterpret_cast<FakeDev *>(dev->drv_data);
     return fd->BlockWrite(buf, block, count);
 }
 
@@ -56,6 +64,7 @@ class BlkdevTest : public ::testing::Test {
         dev->name = dev0_name;
         dev->block_count = TEST_BLOCK_CNT;
         dev->block_size = TEST_BLOCK_SZ;
+        dev->block_shift = 4;
         dev->drv_data = new FakeDev();
         dev->read_block = testReadBlock;
         dev->write_block = testWriteBlock;
@@ -72,7 +81,7 @@ class BlkdevTest : public ::testing::Test {
         }
     }
 
-    struct blkdev *device() { return dev; }
+    const struct blkdev *device() { return dev; }
 
     bool has_block_read() {
         FakeDev *fd = static_cast<FakeDev *>(dev->drv_data);
@@ -129,24 +138,59 @@ TEST_F(BlkdevTest, NoBlockRead) {
 
 TEST_F(BlkdevTest, BlockReadOneBlock) {
     char buf[TEST_BLOCK_SZ];
-    EXPECT_EQ(1, blk_read_block(device(), buf, 0, 1));
+
+    EXPECT_EQ(TEST_BLOCK_SZ, blk_read_block(device(), buf, 0, 1));
     EXPECT_TRUE(has_block_read());
+    for (int i = 0; i < TEST_BLOCK_SZ; i++) {
+        EXPECT_EQ(i, buf[i]);
+    }
 }
 
 TEST_F(BlkdevTest, BlockReadTwoBlocksWithOffset) {
     char buf[2 * TEST_BLOCK_SZ];
-    EXPECT_EQ(2, blk_read_block(device(), buf, 1, 2));
+
+    EXPECT_EQ(2 * TEST_BLOCK_SZ, blk_read_block(device(), buf, 1, 2));
     EXPECT_TRUE(has_block_read());
+    for (int i = 0; i < 2 * TEST_BLOCK_SZ; i++) {
+        EXPECT_EQ(TEST_BLOCK_SZ + i, buf[i]);
+    }
 }
 
 TEST_F(BlkdevTest, BlockReadFull) {
-    char buf[TEST_BLOCK_CNT * TEST_BLOCK_SZ];
-    EXPECT_EQ(TEST_BLOCK_CNT, blk_read_block(device(), buf, 0, TEST_BLOCK_CNT));
+    char buf[TEST_FULL_SZ];
+
+    EXPECT_EQ(TEST_FULL_SZ, blk_read_block(device(), buf, 0, TEST_BLOCK_CNT));
     EXPECT_TRUE(has_block_read());
+
+    for (int i = 0; i < TEST_FULL_SZ; i++) {
+        EXPECT_EQ((char)i, buf[i]);
+    }
+}
+
+TEST_F(BlkdevTest, ReadPartial) {
+    char buf[30];
+
+    memset(buf, 0, 30);
+    EXPECT_EQ(30, blk_read(device(), buf, 10, 30));
+    for (int i = 0; i < 30; i++) {
+        EXPECT_EQ(i + 10, buf[i]);
+    }
+}
+
+TEST_F(BlkdevTest, ReadFull) {
+    char buf[TEST_FULL_SZ];
+
+    memset(buf, 0, TEST_FULL_SZ);
+    EXPECT_EQ(TEST_FULL_SZ, blk_read(device(), buf, 0, TEST_FULL_SZ));
+    for (int i = 0; i < TEST_FULL_SZ; i++) {
+        EXPECT_EQ(i, buf[i]);
+    }
 }
 
 TEST_F(BlkdevTest, NoBlockWrite) {
     char buf[32];
+
+    memset(buf, 0, 32);
     EXPECT_EQ(-1, blk_write_block(NULL, buf, 0, 1));
     EXPECT_FALSE(has_block_write());
     EXPECT_EQ(-1, blk_write_block(device(), NULL, 0, 1));
@@ -157,19 +201,60 @@ TEST_F(BlkdevTest, NoBlockWrite) {
 
 TEST_F(BlkdevTest, BlockWriteOneBlock) {
     char buf[TEST_BLOCK_SZ];
-    EXPECT_EQ(1, blk_write_block(device(), buf, 0, 1));
+
+    memset(buf, 0, TEST_BLOCK_SZ);
+    EXPECT_EQ(TEST_BLOCK_SZ, blk_write_block(device(), buf, 0, 1));
     EXPECT_TRUE(has_block_write());
 }
 
 TEST_F(BlkdevTest, BlockWriteTwoBlocksWithOffset) {
     char buf[2 * TEST_BLOCK_SZ];
-    EXPECT_EQ(2, blk_write_block(device(), buf, 1, 2));
+
+    memset(buf, 0, 2 * TEST_BLOCK_SZ);
+    EXPECT_EQ(2 * TEST_BLOCK_SZ, blk_write_block(device(), buf, 1, 2));
     EXPECT_TRUE(has_block_write());
+
+    memset(buf, 0xff, 2 * TEST_BLOCK_SZ);
+    EXPECT_EQ(2 * TEST_BLOCK_SZ, blk_read_block(device(), buf, 1, 2));
+    for (int i = 0; i < 2 * TEST_BLOCK_SZ; i++) {
+        EXPECT_EQ(0, buf[i]);
+    }
 }
 
 TEST_F(BlkdevTest, BlockWriteFull) {
-    char buf[TEST_BLOCK_CNT * TEST_BLOCK_SZ];
-    EXPECT_EQ(TEST_BLOCK_CNT,
-              blk_write_block(device(), buf, 0, TEST_BLOCK_CNT));
+    char buf[TEST_FULL_SZ];
+
+    memset(buf, 0, TEST_FULL_SZ);
+    EXPECT_EQ(TEST_FULL_SZ, blk_write_block(device(), buf, 0, TEST_BLOCK_CNT));
     EXPECT_TRUE(has_block_write());
+
+    memset(buf, 0xff, TEST_FULL_SZ);
+    EXPECT_EQ(TEST_FULL_SZ, blk_read_block(device(), buf, 0, TEST_BLOCK_CNT));
+    for (int i = 0; i < TEST_FULL_SZ; i++) {
+        EXPECT_EQ(0, buf[i]);
+    }
+}
+
+TEST_F(BlkdevTest, WritePartial) {
+    char buf[23];
+
+    memset(buf, 0, 23);
+    EXPECT_EQ(23, blk_write(device(), buf, 12, 23));
+    memset(buf, 0xff, 23);
+    EXPECT_EQ(23, blk_read(device(), buf, 12, 23));
+    for (int i = 0; i < 23; i++) {
+        EXPECT_EQ(0, buf[i]);
+    }
+}
+
+TEST_F(BlkdevTest, WriteFull) {
+    char buf[TEST_FULL_SZ];
+
+    memset(buf, 0, TEST_FULL_SZ);
+    EXPECT_EQ(TEST_FULL_SZ, blk_write(device(), buf, 0, TEST_FULL_SZ));
+    memset(buf, 0xff, TEST_FULL_SZ);
+    EXPECT_EQ(TEST_FULL_SZ, blk_read(device(), buf, 0, TEST_FULL_SZ));
+    for (int i = 0; i < TEST_FULL_SZ; i++) {
+        EXPECT_EQ(0, buf[i]);
+    }
 }

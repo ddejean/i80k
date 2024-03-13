@@ -6,7 +6,8 @@
 #ifndef _CF20_DEFS_H_
 #define _CF20_DEFS_H_
 
-#define CF20_SECTOR_SIZE 512
+#define CF20_SECTOR_SHIFT 9
+#define CF20_SECTOR_SIZE (1 << CF20_SECTOR_SHIFT)
 
 // Register
 #define REG_DATA(p) (p)

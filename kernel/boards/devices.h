@@ -33,6 +33,8 @@ struct cfi_flash {
     unsigned int sector_count;
     // Size of a sector in bytes.
     unsigned int sector_size;
+    // Shift of the sector size.
+    unsigned int sector_shift;
 };
 
 struct cf20 {

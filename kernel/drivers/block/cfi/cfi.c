@@ -1,5 +1,6 @@
 // Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +68,7 @@ struct cfi_private {
 };
 
 // cfi_get_block_addr return the address of the block as a far pointer.
-static u8_fptr_t cfi_get_block_addr(struct blkdev *dev, uint32_t block) {
+static u8_fptr_t cfi_get_block_addr(const struct blkdev *dev, uint32_t block) {
     struct cfi_private *pdev = dev->drv_data;
 
     uint32_t offset = block * (uint32_t)dev->block_size;
@@ -115,8 +116,8 @@ static void cfi_write_byte(struct cfi_private *pdev, volatile u8_fptr_t addr,
     cfi_toggle_wait(addr);
 }
 
-int cfi_read_block(struct blkdev *dev, void *buf, uint32_t block,
-                   unsigned int count) {
+int cfi_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+                   size_t count) {
     struct cfi_private *pdev;
 
     pdev = dev->drv_data;
@@ -124,18 +125,20 @@ int cfi_read_block(struct blkdev *dev, void *buf, uint32_t block,
         return -1;
     }
 
+    int bytes_read = 0;
     uint8_t *buffer = buf;
     for (unsigned int i = 0; i < count; i++) {
         volatile u8_fptr_t addr = cfi_get_block_addr(dev, block + i);
         fmemcpy(fmem_void_fptr(KERNEL_DS, buffer), addr, dev->block_size);
         buffer += dev->block_size;
+        bytes_read += dev->block_size;
     }
 
-    return 0;
+    return bytes_read;
 }
 
-int cfi_write_block(struct blkdev *dev, void *buf, uint32_t block,
-                    unsigned int count) {
+int cfi_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+                    size_t count) {
     struct cfi_private *pdev;
 
     pdev = dev->drv_data;
@@ -143,7 +146,8 @@ int cfi_write_block(struct blkdev *dev, void *buf, uint32_t block,
         return -1;
     }
 
-    uint8_t *buffer = buf;
+    int bytes_written = 0;
+    const uint8_t *buffer = buf;
     for (unsigned int i = 0; i < count; i++) {
         volatile u8_fptr_t addr = cfi_get_block_addr(dev, block + i);
         cfi_erase_block(pdev, addr);
@@ -151,10 +155,11 @@ int cfi_write_block(struct blkdev *dev, void *buf, uint32_t block,
             cfi_write_byte(pdev, addr, *buffer);
             buffer++;
             addr++;
+            bytes_written++;
         }
     }
 
-    return 0;
+    return bytes_written;
 }
 
 static void cfi_identity(struct cfi_private *pdev, uint8_t *vendor_id,
@@ -215,6 +220,7 @@ bool cfi_probe(void) {
 
     bdev->name = "mtd0";
     bdev->block_size = cfg->sector_size;
+    bdev->block_shift = cfg->sector_shift;
     bdev->block_count = cfg->sector_count;
     bdev->drv_data = pdev;
     bdev->read_block = cfi_read_block;
