@@ -11,7 +11,7 @@
 #include "devices.h"
 #include "driver.h"
 
-int cf20_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
                     size_t count) {
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 
@@ -45,7 +45,7 @@ int cf20_read_block(const struct blkdev *dev, void *buf, uint32_t block,
     return bytes_read;
 }
 
-int cf20_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
                      size_t count) {
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 

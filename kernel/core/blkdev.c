@@ -13,10 +13,10 @@
 // List of registered block devices.
 static struct list_node devices = LIST_INITIAL_VALUE(devices);
 
-int blk_default_read(const struct blkdev *dev, void *_buf, uint32_t offset,
+int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
                      size_t len);
 int blk_default_write(const struct blkdev *dev, const void *_buf,
-                      uint32_t offset, size_t len);
+                      offset_t offset, size_t len);
 
 void blk_register(struct blkdev *dev) {
     if (!dev) {
@@ -58,7 +58,7 @@ struct blkdev *blk_open(const char *name) {
     return NULL;
 }
 
-size_t blk_block_trim_range(const struct blkdev *dev, uint32_t block,
+size_t blk_block_trim_range(const struct blkdev *dev, block_t block,
                             size_t count) {
     if (block >= dev->block_count) {
         return 0;
@@ -72,7 +72,7 @@ size_t blk_block_trim_range(const struct blkdev *dev, uint32_t block,
     return count;
 }
 
-int blk_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+int blk_read_block(const struct blkdev *dev, void *buf, block_t block,
                    size_t count) {
     if (!dev || !dev->read_block || !buf) {
         return -1;
@@ -84,7 +84,7 @@ int blk_read_block(const struct blkdev *dev, void *buf, uint32_t block,
     return dev->read_block(dev, buf, block, count);
 }
 
-int blk_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+int blk_write_block(const struct blkdev *dev, const void *buf, block_t block,
                     size_t count) {
     if (!dev || !dev->write_block || !buf) {
         return -1;
@@ -96,7 +96,7 @@ int blk_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
     return dev->write_block(dev, buf, block, count);
 }
 
-size_t blk_trim_range(const struct blkdev *dev, uint32_t offset, size_t len) {
+size_t blk_trim_range(const struct blkdev *dev, offset_t offset, size_t len) {
     const uint32_t total_size = dev->block_size * dev->block_count;
     if (offset >= total_size) {
         return 0;
@@ -110,7 +110,7 @@ size_t blk_trim_range(const struct blkdev *dev, uint32_t offset, size_t len) {
     return len;
 }
 
-int blk_read(const struct blkdev *dev, void *buf, uint32_t offset, size_t len) {
+int blk_read(const struct blkdev *dev, void *buf, offset_t offset, size_t len) {
     if (!dev || !dev->read || !buf) {
         return -1;
     }
@@ -121,7 +121,7 @@ int blk_read(const struct blkdev *dev, void *buf, uint32_t offset, size_t len) {
     return dev->read(dev, buf, offset, len);
 }
 
-int blk_write(const struct blkdev *dev, const void *buf, uint32_t offset,
+int blk_write(const struct blkdev *dev, const void *buf, offset_t offset,
               size_t len) {
     if (!dev || !dev->read || !buf) {
         return -1;
@@ -133,11 +133,11 @@ int blk_write(const struct blkdev *dev, const void *buf, uint32_t offset,
     return dev->write(dev, buf, offset, len);
 }
 
-int blk_default_read(const struct blkdev *dev, void *_buf, uint32_t offset,
+int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
                      size_t len) {
     uint8_t *buf = (uint8_t *)_buf;
     int bytes_read = 0;
-    uint32_t block;
+    block_t block;
     int err = 0;
     uint8_t *temp = NULL;
 
@@ -211,10 +211,10 @@ err:
 }
 
 int blk_default_write(const struct blkdev *dev, const void *_buf,
-                      uint32_t offset, size_t len) {
+                      offset_t offset, size_t len) {
     const uint8_t *buf = (const uint8_t *)_buf;
     int bytes_written = 0;
-    uint32_t block;
+    block_t block;
     int err = 0;
     uint8_t *temp = NULL;
 
@@ -259,7 +259,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
         block++;
     }
 
-    uint32_t block_count = len >> dev->block_shift;
+    block_t block_count = len >> dev->block_shift;
     err = blk_write_block(dev, buf, block, block_count);
     if (err < 0) {
         goto err;

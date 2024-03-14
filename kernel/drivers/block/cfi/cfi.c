@@ -68,7 +68,7 @@ struct cfi_private {
 };
 
 // cfi_get_block_addr return the address of the block as a far pointer.
-static u8_fptr_t cfi_get_block_addr(const struct blkdev *dev, uint32_t block) {
+static u8_fptr_t cfi_get_block_addr(const struct blkdev *dev, block_t block) {
     struct cfi_private *pdev = dev->drv_data;
 
     uint32_t offset = block * (uint32_t)dev->block_size;
@@ -116,7 +116,7 @@ static void cfi_write_byte(struct cfi_private *pdev, volatile u8_fptr_t addr,
     cfi_toggle_wait(addr);
 }
 
-int cfi_read_block(const struct blkdev *dev, void *buf, uint32_t block,
+int cfi_read_block(const struct blkdev *dev, void *buf, block_t block,
                    size_t count) {
     struct cfi_private *pdev;
 
@@ -137,7 +137,7 @@ int cfi_read_block(const struct blkdev *dev, void *buf, uint32_t block,
     return bytes_read;
 }
 
-int cfi_write_block(const struct blkdev *dev, const void *buf, uint32_t block,
+int cfi_write_block(const struct blkdev *dev, const void *buf, block_t block,
                     size_t count) {
     struct cfi_private *pdev;
 
