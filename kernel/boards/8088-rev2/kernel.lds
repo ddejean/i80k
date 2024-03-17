@@ -48,6 +48,9 @@ SECTIONS {
         _drivers_start = .;
         *(.drivers);
         _drivers_end = .;
+        _fs_start = .;
+        *(.fs);
+        _fs_end = .;
         *(.data*);
 
         /* See comment in previous section. */

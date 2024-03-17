@@ -6,10 +6,13 @@ cc_library(
         "*.h",
         "*.c",
         "*.S",
+        "string/*.c",
+        "string/*.S",
     ]),
     hdrs = glob([
         "*.h",
         "include/*.h",
+        "include/bsd/*.h",
     ]),
     includes = ["include"],
     visibility = ["//visibility:public"],

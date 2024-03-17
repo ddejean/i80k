@@ -1,49 +1,16 @@
-// Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+// Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
 #include <gtest/gtest.h>
+
+#include "fake_dev.h"
 
 extern "C" {
 #include "blkdev.h"
 }
 
-#define TEST_BLOCK_SZ 16
-#define TEST_BLOCK_CNT 4
-#define TEST_FULL_SZ (TEST_BLOCK_CNT * TEST_BLOCK_SZ)
-
 // Test device names.
 char dev0_name[] = "dev0";
 char dev1_name[] = "dev1";
-
-class FakeDev {
-   public:
-    FakeDev() : block_read(false), block_write(false) {
-        for (int i = 0; i < TEST_FULL_SZ; i++) {
-            this->buffer[i] = (uint8_t)i;
-        }
-    }
-
-    int BlockRead(void *buf, uint32_t block, size_t count);
-    int BlockWrite(const void *buf, uint32_t block, size_t count);
-    bool has_block_read() const { return block_read; }
-    bool has_block_write() const { return block_write; }
-
-   private:
-    bool block_read;
-    bool block_write;
-    uint8_t buffer[TEST_FULL_SZ];
-};
-
-int FakeDev::BlockRead(void *buf, uint32_t block, size_t count) {
-    block_read = true;
-    memcpy(buf, &(this->buffer[block * TEST_BLOCK_SZ]), count * TEST_BLOCK_SZ);
-    return count * TEST_BLOCK_SZ;
-}
-
-int FakeDev::BlockWrite(const void *buf, uint32_t block, size_t count) {
-    block_write = true;
-    memcpy(&(this->buffer[block * TEST_BLOCK_SZ]), buf, count * TEST_BLOCK_SZ);
-    return count * TEST_BLOCK_SZ;
-}
 
 extern "C" int testReadBlock(const struct blkdev *dev, void *buf,
                              uint32_t block, size_t count) {

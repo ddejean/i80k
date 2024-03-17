@@ -11,22 +11,24 @@ cc_library(
     includes = ["."],
     visibility = ["//visibility:public"],
     deps = [
-        "//kernel/arch",
-        "//kernel/boards:board",
         "//kernel/utils",
-        "//libc:c",
-    ],
+    ] + select({
+        "@platforms//os:none": ["//libc:c"],
+        "@platforms//os:linux": [],
+    }),
 )
 
 cc_test(
-    name = "blkdev_test",
+    name = "core_test",
     size = "small",
-    srcs = [
-        "blkdev.c",
-        "blkdev.h",
-        "blkdev_test.cc",
-    ],
+    srcs = glob([
+        "tests/*.cc",
+        "tests/*.h",
+    ]),
+    # Required for strlcpy.
+    linkopts = ["-lbsd"],
     deps = [
+        ":core",
         "//kernel/utils",
         "@googletest//:gtest_main",
     ],

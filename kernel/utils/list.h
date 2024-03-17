@@ -1,4 +1,3 @@
-
 // Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 // Copyright (C) 2009 - Travis Geiselbrecht
 //
