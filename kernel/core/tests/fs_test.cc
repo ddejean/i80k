@@ -27,24 +27,67 @@ TEST_F(FsTest, TrimName) {
     EXPECT_STREQ("path", trim_name("  //path"));
 }
 
+void normalizePath(const char *in, char *out, size_t sz) {
+    strncpy(out, in, sz - 1);
+    out[sz - 1] = '\0';
+    fs_normalize_path(out);
+}
+
 TEST_F(FsTest, NormalizePath) {
     char path[FS_MAX_PATH_LEN];
 
-    strncpy(path, "/folder/file", FS_MAX_PATH_LEN - 1);
-    fs_normalize_path(path);
-    EXPECT_STREQ("/folder/file", path);
-
-    strncpy(path, "/folder/../file", FS_MAX_PATH_LEN - 1);
-    fs_normalize_path(path);
-    EXPECT_STREQ("/file", path);
-
-    strncpy(path, "/path//to/a/../file", FS_MAX_PATH_LEN - 1);
-    fs_normalize_path(path);
-    EXPECT_STREQ("/path/to/file", path);
-
-    strncpy(path, "/a/folder/", FS_MAX_PATH_LEN - 1);
-    fs_normalize_path(path);
-    EXPECT_STREQ("/a/folder", path);
+    normalizePath("/", path, sizeof(path));
+    EXPECT_STREQ("", path);
+    normalizePath("/test", path, sizeof(path));
+    EXPECT_STREQ("/test", path);
+    normalizePath("/test/", path, sizeof(path));
+    EXPECT_STREQ("/test", path);
+    normalizePath("test/", path, sizeof(path));
+    EXPECT_STREQ("test", path);
+    normalizePath("test", path, sizeof(path));
+    EXPECT_STREQ("test", path);
+    normalizePath("/test//", path, sizeof(path));
+    EXPECT_STREQ("/test", path);
+    normalizePath("/test/foo", path, sizeof(path));
+    EXPECT_STREQ("/test/foo", path);
+    normalizePath("/test/foo/", path, sizeof(path));
+    EXPECT_STREQ("/test/foo", path);
+    normalizePath("/test/foo/bar", path, sizeof(path));
+    EXPECT_STREQ("/test/foo/bar", path);
+    normalizePath("/test/foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/test/foo/bar", path);
+    normalizePath("/test//foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/test/foo/bar", path);
+    normalizePath("/test//./foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/test/foo/bar", path);
+    normalizePath("/test//./.foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/test/.foo/bar", path);
+    normalizePath("/test//./..foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/test/..foo/bar", path);
+    normalizePath("/test//./../foo/bar//", path, sizeof(path));
+    EXPECT_STREQ("/foo/bar", path);
+    normalizePath("/test/../foo", path, sizeof(path));
+    EXPECT_STREQ("/foo", path);
+    normalizePath("/test/bar/../foo", path, sizeof(path));
+    EXPECT_STREQ("/test/foo", path);
+    normalizePath("../foo", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("../foo/", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("/../foo", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("/../foo/", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("/../../foo", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("/bleh/../../foo", path, sizeof(path));
+    EXPECT_STREQ("foo", path);
+    normalizePath("/bleh/bar/../../foo", path, sizeof(path));
+    EXPECT_STREQ("/foo", path);
+    normalizePath("/bleh/bar/../../foo/..", path, sizeof(path));
+    EXPECT_STREQ("", path);
+    normalizePath("/bleh/bar/../../foo/../meh", path, sizeof(path));
+    EXPECT_STREQ("/meh", path);
 }
 
 TEST_F(FsTest, Mount) {
