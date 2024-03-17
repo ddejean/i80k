@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "error.h"
 #include "list.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -13,10 +14,10 @@
 // List of registered block devices.
 static struct list_node devices = LIST_INITIAL_VALUE(devices);
 
-int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
+int blk_default_read(const struct blkdev *dev, void *_buf, off_t offset,
                      size_t len);
-int blk_default_write(const struct blkdev *dev, const void *_buf,
-                      offset_t offset, size_t len);
+int blk_default_write(const struct blkdev *dev, const void *_buf, off_t offset,
+                      size_t len);
 
 void blk_register(struct blkdev *dev) {
     if (!dev) {
@@ -75,7 +76,7 @@ size_t blk_block_trim_range(const struct blkdev *dev, block_t block,
 int blk_read_block(const struct blkdev *dev, void *buf, block_t block,
                    size_t count) {
     if (!dev || !dev->read_block || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
     count = blk_block_trim_range(dev, block, count);
     if (!count) {
@@ -87,7 +88,7 @@ int blk_read_block(const struct blkdev *dev, void *buf, block_t block,
 int blk_write_block(const struct blkdev *dev, const void *buf, block_t block,
                     size_t count) {
     if (!dev || !dev->write_block || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
     count = blk_block_trim_range(dev, block, count);
     if (!count) {
@@ -96,8 +97,8 @@ int blk_write_block(const struct blkdev *dev, const void *buf, block_t block,
     return dev->write_block(dev, buf, block, count);
 }
 
-size_t blk_trim_range(const struct blkdev *dev, offset_t offset, size_t len) {
-    const uint32_t total_size = dev->block_size * dev->block_count;
+size_t blk_trim_range(const struct blkdev *dev, off_t offset, size_t len) {
+    const off_t total_size = dev->block_size * dev->block_count;
     if (offset >= total_size) {
         return 0;
     }
@@ -110,9 +111,9 @@ size_t blk_trim_range(const struct blkdev *dev, offset_t offset, size_t len) {
     return len;
 }
 
-int blk_read(const struct blkdev *dev, void *buf, offset_t offset, size_t len) {
+int blk_read(const struct blkdev *dev, void *buf, off_t offset, size_t len) {
     if (!dev || !dev->read || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
     len = blk_trim_range(dev, offset, len);
     if (!len) {
@@ -121,10 +122,10 @@ int blk_read(const struct blkdev *dev, void *buf, offset_t offset, size_t len) {
     return dev->read(dev, buf, offset, len);
 }
 
-int blk_write(const struct blkdev *dev, const void *buf, offset_t offset,
+int blk_write(const struct blkdev *dev, const void *buf, off_t offset,
               size_t len) {
     if (!dev || !dev->read || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
     len = blk_trim_range(dev, offset, len);
     if (!len) {
@@ -133,7 +134,7 @@ int blk_write(const struct blkdev *dev, const void *buf, offset_t offset,
     return dev->write(dev, buf, offset, len);
 }
 
-int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
+int blk_default_read(const struct blkdev *dev, void *_buf, off_t offset,
                      size_t len) {
     uint8_t *buf = (uint8_t *)_buf;
     int bytes_read = 0;
@@ -144,7 +145,7 @@ int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
     // Temporary buffer for partial block transfers.
     temp = malloc(dev->block_size);
     if (!temp) {
-        return -1;
+        return ERR_NO_MEM;
     }
 
     // Find the starting block.
@@ -157,7 +158,7 @@ int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 
@@ -179,7 +180,7 @@ int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
     if (err < 0) {
         goto err;
     } else if ((size_t)err != dev->block_size * num_blocks) {
-        err = -1;
+        err = ERR_IO;
         goto err;
     }
     buf += err;
@@ -194,7 +195,7 @@ int blk_default_read(const struct blkdev *dev, void *_buf, offset_t offset,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 
@@ -210,8 +211,8 @@ err:
     return (err >= 0) ? bytes_read : err;
 }
 
-int blk_default_write(const struct blkdev *dev, const void *_buf,
-                      offset_t offset, size_t len) {
+int blk_default_write(const struct blkdev *dev, const void *_buf, off_t offset,
+                      size_t len) {
     const uint8_t *buf = (const uint8_t *)_buf;
     int bytes_written = 0;
     block_t block;
@@ -221,7 +222,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
     // Temporary buffer for partial block transfers.
     temp = malloc(dev->block_size);
     if (!temp) {
-        return -1;
+        return ERR_NO_MEM;
     }
 
     // Find the starting block.
@@ -234,7 +235,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 
@@ -248,7 +249,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 
@@ -264,7 +265,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
     if (err < 0) {
         goto err;
     } else if ((size_t)err != dev->block_size * block_count) {
-        err = -1;
+        err = ERR_IO;
         goto err;
     }
 
@@ -282,7 +283,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 
@@ -294,7 +295,7 @@ int blk_default_write(const struct blkdev *dev, const void *_buf,
         if (err < 0) {
             goto err;
         } else if ((size_t)err != dev->block_size) {
-            err = -1;
+            err = ERR_IO;
             goto err;
         }
 

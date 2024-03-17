@@ -27,6 +27,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "blkdev.h"
 
@@ -62,8 +63,8 @@ int fs_unmount(const char *path);
 int fs_create_file(const char *path, filehandle **handle, uint32_t len);
 int fs_open_file(const char *path, filehandle **handle);
 int fs_remove_file(const char *path);
-int fs_read_file(filehandle *handle, void *buf, offset_t offset, size_t len);
-int fs_write_file(filehandle *handle, const void *buf, offset_t offset,
+int fs_read_file(filehandle *handle, void *buf, off_t offset, size_t len);
+int fs_write_file(filehandle *handle, const void *buf, off_t offset,
                   size_t len);
 int fs_close_file(filehandle *handle);
 int fs_stat_file(filehandle *handle, struct file_stat *);
@@ -103,8 +104,8 @@ struct fs_api {
     int (*remove)(fscookie *, const char *);
     int (*truncate)(filecookie *, uint32_t);
     int (*stat)(filecookie *, struct file_stat *);
-    int (*read)(filecookie *, void *, offset_t, size_t);
-    int (*write)(filecookie *, const void *, offset_t, size_t);
+    int (*read)(filecookie *, void *, off_t, size_t);
+    int (*write)(filecookie *, const void *, off_t, size_t);
     int (*close)(filecookie *);
 
     int (*mkdir)(fscookie *, const char *);

@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "error.h"
 #include "blkdev.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -154,14 +155,14 @@ static int mount(const char *path, const char *device, const struct fs *fs) {
     mount = find_mount(temppath, NULL);
     if (mount) {
         put_mount(mount);
-        return -1;
+        return ERR_INVAL;
     }
 
     /* open a bio device if the string is nonnull */
     struct blkdev *dev = NULL;
     if (device && device[0] != '\0') {
         dev = blk_open(device);
-        if (!dev) return -1;
+        if (!dev) return ERR_NO_DEV;
     }
 
     /* call into the fs implementation */
@@ -174,12 +175,12 @@ static int mount(const char *path, const char *device, const struct fs *fs) {
     /* create the mount structure and add it to the list */
     mount = malloc(sizeof(struct fs_mount));
     if (!mount) {
-        return -1;
+        return ERR_NO_MEM;
     }
     mount->path = strdup(temppath);
     if (!mount->path) {
         free(mount);
-        return -1;
+        return ERR_NO_MEM;
     }
     mount->pathlen = strlen(mount->path);
     mount->dev = dev;
@@ -196,17 +197,17 @@ static int mount(const char *path, const char *device, const struct fs *fs) {
 int fs_format_device(const char *fsname, const char *device, const void *args) {
     const struct fs *fs = find_fs(fsname);
     if (!fs) {
-        return -1;
+        return ERR_INVAL;
     }
 
     if (fs->api->format == NULL) {
-        return -1;
+        return ERR_INVAL;
     }
 
     struct blkdev *dev = NULL;
     if (device && device[0] != '\0') {
         dev = blk_open(device);
-        if (!dev) return -1;
+        if (!dev) return ERR_NO_DEV;
     }
 
     return fs->api->format(dev, args);
@@ -214,7 +215,7 @@ int fs_format_device(const char *fsname, const char *device, const void *args) {
 
 int fs_mount(const char *path, const char *fsname, const char *device) {
     const struct fs *fs = find_fs(fsname);
-    if (!fs) return -1;
+    if (!fs) return ERR_NO_ENTRY;
 
     return mount(path, device, fs);
 }
@@ -226,7 +227,7 @@ int fs_unmount(const char *path) {
     fs_normalize_path(temppath);
 
     struct fs_mount *mount = find_mount(temppath, NULL);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     // return the ref that find_mount added and one extra
     put_mount(mount);
@@ -243,7 +244,7 @@ int fs_open_file(const char *path, filehandle **handle) {
 
     const char *newpath;
     struct fs_mount *mount = find_mount(temppath, &newpath);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     filecookie *cookie;
     int err = mount->api->open(mount->cookie, newpath, &cookie);
@@ -268,7 +269,7 @@ int fs_create_file(const char *path, filehandle **handle, uint32_t len) {
 
     const char *newpath;
     struct fs_mount *mount = find_mount(temppath, &newpath);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     if (!mount->api->create) {
         put_mount(mount);
@@ -295,7 +296,7 @@ int fs_create_file(const char *path, filehandle **handle, uint32_t len) {
 }
 
 int fs_truncate_file(filehandle *handle, uint32_t len) {
-    if (!handle) return -1;
+    if (!handle) return ERR_INVAL;
 
     return handle->mount->api->truncate(handle->cookie, len);
 }
@@ -308,11 +309,11 @@ int fs_remove_file(const char *path) {
 
     const char *newpath;
     struct fs_mount *mount = find_mount(temppath, &newpath);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     if (!mount->api->remove) {
         put_mount(mount);
-        return -1;
+        return ERR_NOT_SUPP;
     }
 
     int err = mount->api->remove(mount->cookie, newpath);
@@ -322,11 +323,11 @@ int fs_remove_file(const char *path) {
     return err;
 }
 
-int fs_read_file(filehandle *handle, void *buf, offset_t offset, size_t len) {
+int fs_read_file(filehandle *handle, void *buf, off_t offset, size_t len) {
     return handle->mount->api->read(handle->cookie, buf, offset, len);
 }
 
-int fs_write_file(filehandle *handle, const void *buf, offset_t offset,
+int fs_write_file(filehandle *handle, const void *buf, off_t offset,
                   size_t len) {
     if (!handle->mount->api->write) return -1;
 
@@ -354,11 +355,11 @@ int fs_make_dir(const char *path) {
 
     const char *newpath;
     struct fs_mount *mount = find_mount(temppath, &newpath);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     if (!mount->api->mkdir) {
         put_mount(mount);
-        return -1;
+        return ERR_NOT_SUPP;
     }
 
     int err = mount->api->mkdir(mount->cookie, newpath);
@@ -376,11 +377,11 @@ int fs_open_dir(const char *path, dirhandle **handle) {
 
     const char *newpath;
     struct fs_mount *mount = find_mount(temppath, &newpath);
-    if (!mount) return -1;
+    if (!mount) return ERR_NO_ENTRY;
 
     if (!mount->api->opendir) {
         put_mount(mount);
-        return -1;
+        return ERR_NOT_SUPP;
     }
 
     dircookie *cookie;
@@ -393,7 +394,7 @@ int fs_open_dir(const char *path, dirhandle **handle) {
     dirhandle *d = malloc(sizeof(*d));
     if (!d) {
         put_mount(mount);
-        return -1;
+        return ERR_NO_MEM;
     }
     d->cookie = cookie;
     d->mount = mount;
@@ -403,13 +404,13 @@ int fs_open_dir(const char *path, dirhandle **handle) {
 }
 
 int fs_read_dir(dirhandle *handle, struct dirent *ent) {
-    if (!handle->mount->api->readdir) return -1;
+    if (!handle->mount->api->readdir) return ERR_NOT_SUPP;
 
     return handle->mount->api->readdir(handle->cookie, ent);
 }
 
 int fs_close_dir(dirhandle *handle) {
-    if (!handle->mount->api->closedir) return -1;
+    if (!handle->mount->api->closedir) return ERR_NOT_SUPP;
 
     int err = handle->mount->api->closedir(handle->cookie);
     if (err < 0) return err;
@@ -421,18 +422,18 @@ int fs_close_dir(dirhandle *handle) {
 
 int fs_stat_fs(const char *mountpoint, struct fs_stat *stat) {
     if (!stat) {
-        return -1;
+        return ERR_INVAL;
     }
 
     const char *newpath;
     struct fs_mount *mount = find_mount(mountpoint, &newpath);
     if (!mount) {
-        return -1;
+        return ERR_NO_ENTRY;
     }
 
     if (!mount->api->fs_stat) {
         put_mount(mount);
-        return -1;
+        return ERR_NOT_SUPP;
     }
 
     int result = mount->api->fs_stat(mount->cookie, stat);

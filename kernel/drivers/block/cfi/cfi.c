@@ -10,6 +10,7 @@
 #include "delay.h"
 #include "devices.h"
 #include "driver.h"
+#include "error.h"
 #include "fmem.h"
 
 // Manufacturer ID list.
@@ -122,7 +123,7 @@ int cfi_read_block(const struct blkdev *dev, void *buf, block_t block,
 
     pdev = dev->drv_data;
     if (!pdev) {
-        return -1;
+        return ERR_INVAL;
     }
 
     int bytes_read = 0;
@@ -143,7 +144,7 @@ int cfi_write_block(const struct blkdev *dev, const void *buf, block_t block,
 
     pdev = dev->drv_data;
     if (!pdev) {
-        return -1;
+        return ERR_INVAL;
     }
 
     int bytes_written = 0;

@@ -10,13 +10,14 @@
 #include "cpu.h"
 #include "devices.h"
 #include "driver.h"
+#include "error.h"
 
 int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
                     size_t count) {
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 
     if (!count || count > 256 || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
 
     // 0 is a special value for 256.
@@ -50,7 +51,7 @@ int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
     struct cf20_private *pdev = (struct cf20_private *)dev->drv_data;
 
     if (!count || count > 256 || !buf) {
-        return -1;
+        return ERR_INVAL;
     }
 
     // 0 is a special value for 256.

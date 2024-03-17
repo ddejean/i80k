@@ -3,7 +3,6 @@
 cc_library(
     name = "c",
     srcs = glob([
-        "*.h",
         "*.c",
         "*.S",
         "string/*.c",
@@ -13,6 +12,7 @@ cc_library(
         "*.h",
         "include/*.h",
         "include/bsd/*.h",
+        "include/sys/*.h",
     ]),
     includes = ["include"],
     visibility = ["//visibility:public"],

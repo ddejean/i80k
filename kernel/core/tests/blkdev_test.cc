@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "blkdev.h"
+#include "error.h"
 }
 
 // Test device names.
@@ -95,9 +96,9 @@ TEST_F(BlkdevTest, BlockTrimRange) {
 
 TEST_F(BlkdevTest, NoBlockRead) {
     char buf[32];
-    EXPECT_EQ(-1, blk_read_block(NULL, buf, 0, 1));
+    EXPECT_EQ(ERR_INVAL, blk_read_block(NULL, buf, 0, 1));
     EXPECT_FALSE(has_block_read());
-    EXPECT_EQ(-1, blk_read_block(device(), NULL, 0, 1));
+    EXPECT_EQ(ERR_INVAL, blk_read_block(device(), NULL, 0, 1));
     EXPECT_FALSE(has_block_read());
     EXPECT_EQ(0, blk_read_block(device(), buf, 5, 1));
     EXPECT_FALSE(has_block_read());
@@ -158,9 +159,9 @@ TEST_F(BlkdevTest, NoBlockWrite) {
     char buf[32];
 
     memset(buf, 0, 32);
-    EXPECT_EQ(-1, blk_write_block(NULL, buf, 0, 1));
+    EXPECT_EQ(ERR_INVAL, blk_write_block(NULL, buf, 0, 1));
     EXPECT_FALSE(has_block_write());
-    EXPECT_EQ(-1, blk_write_block(device(), NULL, 0, 1));
+    EXPECT_EQ(ERR_INVAL, blk_write_block(device(), NULL, 0, 1));
     EXPECT_FALSE(has_block_write());
     EXPECT_EQ(0, blk_write_block(device(), buf, 5, 1));
     EXPECT_FALSE(has_block_write());

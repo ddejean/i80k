@@ -1,6 +1,7 @@
 // Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #include "list.h"
 
@@ -9,8 +10,6 @@
 
 // Block number/block address type.
 typedef uint32_t block_t;
-// Offset in bytes.
-typedef uint32_t offset_t;
 
 struct blkdev {
     // Handle for the list of block devices.
@@ -33,9 +32,9 @@ struct blkdev {
                       size_t count);
     int (*write_block)(const struct blkdev *dev, const void *buf, block_t block,
                        size_t count);
-    int (*read)(const struct blkdev *dev, void *buf, offset_t offset,
+    int (*read)(const struct blkdev *dev, void *buf, off_t offset,
                 size_t len);
-    int (*write)(const struct blkdev *dev, const void *buf, offset_t offset,
+    int (*write)(const struct blkdev *dev, const void *buf, off_t offset,
                  size_t len);
 };
 
@@ -61,15 +60,15 @@ int blk_write_block(const struct blkdev *dev, const void *buf, block_t block,
 
 // blk_read reads |len| bytes starting at bytes |offset| from |dev|.
 // Returns the number of bytes read or a negative value on error.
-int blk_read(const struct blkdev *dev, void *buf, offset_t offset, size_t len);
+int blk_read(const struct blkdev *dev, void *buf, off_t offset, size_t len);
 
 // blk_write writes |len| bytes starting at bytes |offset| from |dev|.
 // Returns the number of bytes written or a negative value on error.
-int blk_write(const struct blkdev *dev, const void *buf, offset_t offset,
+int blk_write(const struct blkdev *dev, const void *buf, off_t offset,
               size_t len);
 
 size_t blk_block_trim_range(const struct blkdev *dev, block_t block,
                             size_t count);
-size_t blk_trim_range(const struct blkdev *dev, offset_t offset, size_t count);
+size_t blk_trim_range(const struct blkdev *dev, off_t offset, size_t count);
 
 #endif  // _BLKDEV_H_
