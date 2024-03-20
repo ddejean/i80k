@@ -30,6 +30,7 @@ filegroup(
 board_rev3_drivers = [
     "//kernel/drivers/block/cfi",
     "//kernel/drivers/block/cf20",
+    "//kernel/drivers/fs/ext2",
 ]
 
 cc_library(

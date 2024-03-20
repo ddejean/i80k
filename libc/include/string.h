@@ -27,4 +27,6 @@ int strcmp(const char *s1, const char *s2);
 
 char *strdup(const char *s);
 
+char *strchr(const char *s, int c);
+
 #endif  // _STRINGS_H_

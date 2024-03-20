@@ -97,7 +97,7 @@ struct fs_api {
     int (*format)(struct blkdev *, const void *);
     int (*fs_stat)(fscookie *, struct fs_stat *);
 
-    int (*mount)(struct blkdev *, fscookie **);
+    int (*mount)(const struct blkdev *, fscookie **);
     int (*unmount)(fscookie *);
     int (*open)(fscookie *, const char *, filecookie **);
     int (*create)(fscookie *, const char *, filecookie **, uint32_t);

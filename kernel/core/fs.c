@@ -30,10 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "error.h"
 #include "blkdev.h"
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#include "error.h"
 
 struct fs_mount {
     struct list_node node;

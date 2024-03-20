@@ -7,6 +7,7 @@
 #define ERR_IO (-5)
 #define ERR_NO_MEM (-12)
 #define ERR_NO_DEV (-19)
+#define ERR_NOT_DIR (-20)
 #define ERR_INVAL (-22)
 #define ERR_NOT_SUPP (-134)
 

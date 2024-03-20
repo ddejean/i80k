@@ -10,11 +10,10 @@
 #include "cpu.h"
 #include "debug.h"
 #include "driver.h"
+#include "fs.h"
 #include "heap.h"
 #include "syscall.h"
 #include "update.h"
-
-uint8_t buf[4096];
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
@@ -47,6 +46,8 @@ void kernel(void) {
 
     // Probe devices and instantiate the drivers.
     driver_probes();
+
+    fs_mount("/", "ext2", "sda");
 
     // Shell ersatz
     while (1) {

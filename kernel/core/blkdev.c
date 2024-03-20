@@ -3,13 +3,12 @@
 #include "blkdev.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "error.h"
 #include "list.h"
-
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // List of registered block devices.
 static struct list_node devices = LIST_INITIAL_VALUE(devices);
