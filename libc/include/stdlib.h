@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 extern void *malloc(size_t size);
+void *calloc(size_t nmemb, size_t size);
 extern void free(void *ptr);
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))

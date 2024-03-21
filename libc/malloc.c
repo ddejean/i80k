@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 // Heap, NULL at first and will grow with the allocations.
@@ -137,6 +139,19 @@ void *malloc(size_t size) {
     header = zone;
     header->size = full_size;
     return (void *)header->mem;
+}
+
+void *calloc(size_t nmemb, size_t size) {
+    size_t sz = nmemb * size;
+    if (!sz) {
+        return NULL;
+    }
+    void *ptr = malloc(sz);
+    if (!ptr) {
+        return NULL;
+    }
+    memset(ptr, 0, sz);
+    return ptr;
 }
 
 void free(void *ptr) {

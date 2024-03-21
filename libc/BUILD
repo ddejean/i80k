@@ -14,6 +14,11 @@ cc_library(
         "include/bsd/*.h",
         "include/sys/*.h",
     ]),
+    # Prevent the compiler to replace malloc and free by custom implementations.
+    copts = [
+        "-fno-builtin-malloc",
+        "-fno-builtin-free",
+    ],
     includes = ["include"],
     visibility = ["//visibility:public"],
 )
