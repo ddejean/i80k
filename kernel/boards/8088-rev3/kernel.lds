@@ -6,7 +6,7 @@ MEMORY {
   /* IDT is located at address 0x0 in the first segment. */
   idt       (rwx) : ORIGIN = 0x0000, LENGTH = 0x0400
   /* The usable RAM in the first segment is right after the IDT. */
-  ram       (rwx) : ORIGIN = 0x0400, LENGTH = 0x7FF0
+  ram       (rwx) : ORIGIN = 0x0400, LENGTH = 0xFC00
   /* The ROM is physically located at address F000:8000. */
   rom       (rx)  : ORIGIN = 0xE0000, LENGTH = 0x1FFF0
   /* The bootstrap code is physically and logically located at address F000:FFF0. */

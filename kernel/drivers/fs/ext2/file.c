@@ -23,8 +23,11 @@ int ext2_open_file(fscookie *cookie, const char *path, filecookie **fcookie) {
     if (err < 0) return err;
 
     /* create the file object */
-    ext2_file_t *file = malloc(sizeof(ext2_file_t));
-    memset(file, 0, sizeof(ext2_file_t));
+    ext2_file_t *file = calloc(1, sizeof(ext2_file_t));
+    if (!file) {
+        printf("ext2: failed to allocate file handle\n");
+        return ERR_NO_MEM;
+    }
 
     /* read in the inode */
     err = ext2_load_inode(ext2, inum, &file->inode);
@@ -79,7 +82,6 @@ off_t ext2_file_len(ext2_t *ext2, struct ext2_inode *inode) {
         (S_ISREG(inode->i_mode))) {
         /* can potentially be a large file */
         // len |= (off_t)inode->i_size_high << 32;
-        printf("ext2: file larger than supported size\n");
         return ERR_NOT_SUPP;
     }
 

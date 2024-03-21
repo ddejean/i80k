@@ -147,11 +147,15 @@ static int mount(const char *path, const char *device, const struct fs *fs) {
     strlcpy(temppath, path, sizeof(temppath));
     fs_normalize_path(temppath);
 
-    if (temppath[0] != '/') return -1;
+    if (temppath[0] != '/') {
+        printf("fs: invalid mount path %s\n", temppath);
+        return ERR_INVAL;
+    }
 
     /* see if there's already something at this path, abort if there is */
     mount = find_mount(temppath, NULL);
     if (mount) {
+        printf("fs: a mount point already exists at %s\n", temppath);
         put_mount(mount);
         return ERR_INVAL;
     }
@@ -160,7 +164,10 @@ static int mount(const char *path, const char *device, const struct fs *fs) {
     struct blkdev *dev = NULL;
     if (device && device[0] != '\0') {
         dev = blk_open(device);
-        if (!dev) return ERR_NO_DEV;
+        if (!dev) {
+            printf("fs: no block device %s\n", device);
+            return ERR_NO_DEV;
+        }
     }
 
     /* call into the fs implementation */

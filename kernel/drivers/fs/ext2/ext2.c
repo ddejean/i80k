@@ -7,6 +7,7 @@
  */
 
 #include <endian.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -95,18 +96,26 @@ int ext2_mount(const struct blkdev *dev, fscookie **cookie) {
 
     if (!dev) return ERR_INVAL;
 
-    ext2_t *ext2 = malloc(sizeof(ext2_t));
+    ext2_t *ext2 = calloc(1, sizeof(ext2_t));
+    if (!ext2) {
+        printf("ext2: failed to allocate superblock\n");
+        return ERR_NO_MEM;
+    }
     ext2->dev = dev;
 
     err = blk_read(dev, &ext2->sb, 1024, sizeof(struct ext2_super_block));
-    if (err < 0) goto err;
+    if (err < 0) {
+        printf("ext2: failed to read superblock (error %d)\n", err);
+        goto err;
+    }
 
     endian_swap_superblock(&ext2->sb);
 
     /* see if the superblock is good */
     if (ext2->sb.s_magic != EXT2_SUPER_MAGIC) {
+        printf("ext2: invalid superblock magic %x\n", ext2->sb.s_magic);
         err = -1;
-        return err;
+        goto err;
     }
 
     /* calculate group count, rounded up */
@@ -116,25 +125,30 @@ int ext2_mount(const struct blkdev *dev, fscookie **cookie) {
 
     /* we only support dynamic revs */
     if (ext2->sb.s_rev_level > EXT2_DYNAMIC_REV) {
-        err = -2;
-        return err;
+        printf("ext2: implementation only supports dynamic revisions\n");
+        err = ERR_NOT_SUPP;
+        goto err;
     }
 
     /* make sure it doesn't have any ro features we don't support */
-    if (ext2->sb.s_feature_ro_compat & ~(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER |
-                                         EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
-        err = -3;
-        return err;
+    if (ext2->sb.s_feature_ro_compat & ~(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+        // Add EXT2_FEATURE_RO_COMPAT_LARGE_FILE once it is supported.
+        err = ERR_NOT_SUPP;
+        goto err;
     }
 
     /* read in all the group descriptors */
-    ext2->gd = malloc(sizeof(struct ext2_group_desc) * ext2->s_group_count);
+    ext2->gd = calloc(ext2->s_group_count, sizeof(struct ext2_group_desc));
+    if (!ext2->gd) {
+        err = ERR_NO_MEM;
+        goto err;
+    }
     err = blk_read(ext2->dev, (void *)ext2->gd,
                    (EXT2_BLOCK_SIZE(ext2->sb) == 4096) ? 4096 : 2048,
                    sizeof(struct ext2_group_desc) * ext2->s_group_count);
     if (err < 0) {
         err = -4;
-        return err;
+        goto err;
     }
 
     int i;
@@ -151,6 +165,7 @@ int ext2_mount(const struct blkdev *dev, fscookie **cookie) {
     return 0;
 
 err:
+    free(ext2->gd);
     free(ext2);
     return err;
 }
