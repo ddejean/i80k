@@ -194,7 +194,7 @@ bool cfi_probe(void) {
         return false;
     }
 
-    pdev = malloc(sizeof(*pdev));
+    pdev = calloc(1, sizeof(*pdev));
     if (!pdev) {
         printf("CFI: failed to allocate private data.\n");
         return false;
@@ -213,7 +213,7 @@ bool cfi_probe(void) {
         goto error;
     }
 
-    bdev = malloc(sizeof(*bdev));
+    bdev = calloc(1, sizeof(*bdev));
     if (!bdev) {
         printf("CFI: failed to allocate block device.\n");
         goto error;

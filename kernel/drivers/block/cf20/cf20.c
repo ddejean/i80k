@@ -38,8 +38,8 @@ int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
             ;
 
         for (int byte = 0; byte < CF20_SECTOR_SIZE; byte += 2) {
-            buffer[sector * CF20_SECTOR_SIZE + byte + 1] = inb(pdev->regs.data);
             buffer[sector * CF20_SECTOR_SIZE + byte] = inb(pdev->regs.data);
+            buffer[sector * CF20_SECTOR_SIZE + byte + 1] = inb(pdev->regs.data);
             bytes_read += 2;
         }
     }
@@ -72,8 +72,8 @@ int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
             ;
 
         for (int byte = 0; byte < CF20_SECTOR_SIZE; byte += 2) {
-            outb(pdev->regs.data, buffer[sector * CF20_SECTOR_SIZE + byte + 1]);
             outb(pdev->regs.data, buffer[sector * CF20_SECTOR_SIZE + byte]);
+            outb(pdev->regs.data, buffer[sector * CF20_SECTOR_SIZE + byte + 1]);
             bytes_written += 2;
         }
     }
@@ -100,7 +100,7 @@ bool cf20_probe(void) {
     }
 
     // Allocate the private driver structure.
-    pdev = malloc(sizeof(*pdev));
+    pdev = calloc(1, sizeof(*pdev));
     if (!pdev) {
         printf("CF: failed to allocate driver private struct\n");
         return false;
@@ -127,7 +127,7 @@ bool cf20_probe(void) {
         }
     }
 
-    cf_id = malloc(sizeof(*cf_id));
+    cf_id = calloc(1, sizeof(*cf_id));
     if (!cf_id) {
         printf("CF: failed to allocate identity struct.\n");
         goto error;
@@ -150,7 +150,7 @@ bool cf20_probe(void) {
     }
 
     // Create the block device.
-    dev = malloc(sizeof(*dev));
+    dev = calloc(1, sizeof(*dev));
     if (!dev) {
         printf("CF: failed to allocate block device.\n");
         goto error;
@@ -166,6 +166,7 @@ bool cf20_probe(void) {
 
     // Finally register the block device and leave.
     blk_register(dev);
+    free(cf_id);
     return true;
 
 error:
