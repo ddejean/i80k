@@ -2,6 +2,7 @@
 
 #include "clock.h"
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include "board.h"
@@ -10,15 +11,18 @@
 #include "interrupts.h"
 #include "timer.h"
 
+// Device behind the clock.
+static struct timer *t;
+
 // Kernel ticks. Marked as volatile to prevent the kernel from doing any
 // optimizations on it.
-volatile unsigned long ticks;
+uint64_t ticks;
 
 // Interruption request handler.
 void clock_int_handler(void);
 
 void clock_initialize(void) {
-    struct timer *t = timer_get("timer0");
+    t = timer_get("timer0");
     if (!t) {
         printf("Clock: no timer found.\n");
         return;
@@ -35,28 +39,16 @@ void clock_initialize(void) {
            CLOCK_INC_MS, t->irq);
 }
 
-unsigned long clock_now(void) {
-    unsigned long now;
+void clock_handler(void) {
+    ticks++;
+    irq_ack(t->irq);
+}
+
+uint64_t clock_now(void) {
+    uint64_t now;
     // Atomic clock read.
     cli();
     now = ticks;
     sti();
     return now * CLOCK_INC_MS;
-}
-
-int clock_wait(unsigned long delay, wait_t type) {
-    unsigned long due_time;
-    due_time = clock_now() + delay;
-
-    switch (type) {
-        case POLL_WAIT:
-            while (due_time > clock_now()) {
-                hlt();
-            }
-            return 0;
-
-        case BLOCK_WAIT:
-        default:
-            return -1;
-    }
 }

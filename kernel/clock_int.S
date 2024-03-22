@@ -1,4 +1,4 @@
-// Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+// Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 //
 // Provides an interrupt handler for the clock.
 
@@ -8,37 +8,29 @@
 
 .section .text
 
-.extern ticks
+.extern clock_handler
 
 .global clock_int_handler
 clock_int_handler:
     // Save the only register we'll use.
     push %ax
+    push %bx
+    push %cx
+    push %dx
     push %ds
     push %es
     // Set kernel data segment.
     mov $KERNEL_DS, %ax
     mov %ax, %ds
     mov %ax, %es
-    // Ack the interrupt controller.
-    movb $0x20, %al
-    outb %al, $0x20
-    // Load the current tick value
-    mov ticks, %ax
-    // Increment the tick least significant word by one and keep the carry.
-    clc
-    adc $0x1, %ax
-    mov %ax, ticks
-    // If no carry, do not care of the most significant word.
-    jnc _done
-    // Carry is set, we need to increment the most significant word.
-    mov ticks+2, %ax
-    inc %ax
-    mov %ax, ticks+2
-_done:
+    // Call the interrupt handler.
+    call clock_handler
     // Restore the touched register.
     pop %es
     pop %ds
+    pop %dx
+    pop %cx
+    pop %bx
     pop %ax
     // Return from interrupt.
     iret
