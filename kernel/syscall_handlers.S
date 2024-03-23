@@ -6,6 +6,32 @@
 
 .section .text
 
+.extern breakpoint
+.global int3_handler
+int3_handler:
+    mov %sp, %bp
+    // Push directly accessible registers on the stack.
+    push %sp
+    push %ss
+    push %es
+    push %ds
+    push %di
+    push %si
+    push %dx
+    push %cx
+    push %bx
+    push %ax
+    // Get other registers from the stack and push them for the call.
+    mov (%bp), %ax  // IP
+    push %ax
+    mov 2(%bp), %ax // CS
+    push %ax
+    mov 4(%bp), %ax // Flags
+    push %ax
+    call breakpoint
+    add $26, %sp
+    iret
+
 .extern syscall_int21
 .global int21_handler
 int21_handler:
