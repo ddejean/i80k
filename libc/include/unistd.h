@@ -4,6 +4,7 @@
 #define _UNISTD_H_
 
 #include <stdint.h>
+#include <sys/types.h>
 
 // brk sets the end of the data segment to the value specified by addr.
 // On success brk() returns 0. On error -1 is returned.
@@ -16,5 +17,8 @@ int brk(void *addr);
 // increased, then this value is a pointer to the start of the newly allocated
 // memory).  On error, (void *) -1 is returned.
 void *sbrk(intptr_t increment);
+
+// getpid returns the process ID (PID) of the calling process.
+pid_t getpid(void);
 
 #endif  // _UNISTD_H_

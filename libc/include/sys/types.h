@@ -20,6 +20,9 @@ typedef unsigned long ulong;
 // Used for file size.
 typedef long off_t;
 
+// Used for process IDs and process group IDs.
+typedef int pid_t;
+
 // Used for a count of bytes or an error indication.
 typedef int ssize_t;
 

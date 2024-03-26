@@ -16,14 +16,15 @@
 #include "heap.h"
 #include "scheduler.h"
 #include "syscall.h"
+#include "unistd.h"
 #include "update.h"
 
 int task0(void) {
+    printf("%s: pid=%d\n", __func__, getpid());
     for (int i = 0; i < 128; i++) {
         printf("task0: %d\n", i++);
         hlt();
     }
-    exit(0);
     return 0;
 }
 

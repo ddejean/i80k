@@ -2,10 +2,10 @@
 
 #include "scheduler.h"
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "board.h"
 #include "cpu.h"
@@ -29,7 +29,7 @@ struct task {
     // Process context.
     struct context ctx;
     // Process ID.
-    unsigned int pid;
+    pid_t pid;
     // Process stack.
     uint16_t *stack;
 
@@ -56,7 +56,7 @@ struct bootstrap_stack {
 struct task *current;
 
 // Next available PID.
-static unsigned int next_pid;
+static pid_t next_pid;
 
 // List or ready processes.
 struct list_node ready = LIST_INITIAL_VALUE(ready);
@@ -157,4 +157,11 @@ void scheduler_exit(int status) {
     list_add_before(&zombies, &current->node);
 
     schedule();
+}
+
+pid_t scheduler_getpid() {
+    if (!current) {
+        return ERR_NO_ENTRY;
+    }
+    return current->pid;
 }

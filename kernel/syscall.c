@@ -83,6 +83,9 @@ int syscall_int80(uint16_t nr, uint16_t arg0) {
     int ret = -1;
 
     switch (nr) {
+        case 0x27:
+            ret = scheduler_getpid();
+            break;
         case 0x0c:  // brk
             ret = (int)heap_brk((void *)arg0);
             break;
