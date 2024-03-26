@@ -1,7 +1,9 @@
 // Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "board.h"
@@ -12,8 +14,18 @@
 #include "driver.h"
 #include "fs.h"
 #include "heap.h"
+#include "scheduler.h"
 #include "syscall.h"
 #include "update.h"
+
+int task0(void) {
+    for (int i = 0; i < 128; i++) {
+        printf("task0: %d\n", i++);
+        hlt();
+    }
+    exit(0);
+    return 0;
+}
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
@@ -26,6 +38,8 @@ void kernel(void) {
     console_initialize();
     // Prepares the interrupt system to allow the syscalls to be operational.
     syscall_setup();
+    // Prepares the scheduler to manage thread and processes.
+    scheduler_initialize();
 
     printf("Kernel loaded:\n");
     printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
@@ -47,28 +61,17 @@ void kernel(void) {
     // Probe devices and instantiate the drivers.
     driver_probes();
 
-    fs_mount("/", "ext2", "sda");
+    cli();
+    sti();
 
-    // Shell ersatz
+    cli();
+    scheduler_kthread_start(task0, 2046);
+    sti();
+
+    int i = 0;
     while (1) {
-        int c;
-
-        c = getchar();
-        if (c < 0) {
-            // No char, just wait for the next one.
-            hlt();
-            continue;
-        }
-
-        printf("%c\n", (char)c);
-
-        switch ((char)c) {
-            case 'u':
-                update();
-                break;
-            default:
-                printf("command '%c' unknown.\n", (char)c);
-                break;
-        }
+        printf("kernel: %d - %llu ms\n", i, clock_now());
+        i++;
+        hlt();
     }
 }

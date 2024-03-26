@@ -9,6 +9,7 @@
 #include "cpu.h"
 #include "devices.h"
 #include "interrupts.h"
+#include "scheduler.h"
 #include "timer.h"
 
 // Device behind the clock.
@@ -42,6 +43,10 @@ void clock_initialize(void) {
 void clock_handler(void) {
     ticks++;
     irq_ack(t->irq);
+
+    if ((ticks & 0x7) == 0) {
+        schedule();
+    }
 }
 
 uint64_t clock_now(void) {
