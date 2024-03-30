@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "board.h"
+#include "clk.h"
 #include "console.h"
 #include "cpu.h"
 #include "heap.h"
@@ -79,7 +80,8 @@ int syscall_int21(uint16_t ax, uint16_t dx) {
     return ret;
 }
 
-int syscall_int80(uint16_t nr, uint16_t arg0) {
+int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
+                  uint16_t arg3) {
     int ret = -1;
 
     switch (nr) {
@@ -91,6 +93,14 @@ int syscall_int80(uint16_t nr, uint16_t arg0) {
             break;
         case 0x3c:
             scheduler_exit((int)arg0);
+            break;
+        case 0xe3:
+            ret = clk_gettime((clockid_t)arg0, (struct timespec *)arg1);
+            break;
+        case 0xe6:
+            ret = clk_nanosleep((clockid_t)arg0, (int)arg1,
+                                (const struct timespec *)arg2,
+                                (struct timespec *)arg3);
             break;
     }
     return ret;

@@ -13,32 +13,6 @@
 #include "error.h"
 #include "list.h"
 
-// Process state.
-enum task_state {
-    READY,
-    RUNNING,
-    WAITING,
-    ZOMBIE,
-};
-
-// Represents a process.
-struct task {
-    // List node of the processes list.
-    struct list_node node;
-
-    // Process context.
-    struct context ctx;
-    // Process ID.
-    pid_t pid;
-    // Process stack.
-    uint16_t *stack;
-
-    // Process state.
-    enum task_state state;
-    // Process return value.
-    int status;
-};
-
 // Helper to fill the initial stack.
 struct bootstrap_stack {
     uint16_t flags;
@@ -164,4 +138,22 @@ pid_t scheduler_getpid() {
         return ERR_NO_ENTRY;
     }
     return current->pid;
+}
+
+void scheduler_sleep_on(struct list_node *queue, void *sleep_data) {
+    if (!queue) {
+        return;
+    }
+    current->state = WAITING;
+    current->wait_state = sleep_data;
+    list_add_before(queue, &current->node);
+    schedule();
+}
+
+void scheduler_wake_up(struct task *task) {
+    if (!task) {
+        return;
+    }
+    task->state = READY;
+    list_add_before(&ready, &task->node);
 }

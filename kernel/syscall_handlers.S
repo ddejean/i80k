@@ -44,8 +44,11 @@ int21_handler:
 .extern syscall_int80
 .global int80_handler
 int80_handler:
+    push %si
+    push %dx
+    push %cx
     push %bx
     push %ax
     call syscall_int80
-    add $4, %sp
+    add $10, %sp
     iret

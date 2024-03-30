@@ -26,4 +26,7 @@ typedef int pid_t;
 // Used for a count of bytes or an error indication.
 typedef int ssize_t;
 
+typedef unsigned long clock_t;
+typedef long long time_t;
+
 #endif  // _SYS_TYPES_H_

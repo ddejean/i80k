@@ -8,10 +8,10 @@
 
 .section .text
 
-.extern clock_handler
+.extern clk_handler
 
-.global clock_int_handler
-clock_int_handler:
+.global clk_int_handler
+clk_int_handler:
     // Save the only register we'll use.
     push %ax
     push %bx
@@ -24,7 +24,7 @@ clock_int_handler:
     mov %ax, %ds
     mov %ax, %es
     // Call the interrupt handler.
-    call clock_handler
+    call clk_handler
     // Restore the touched register.
     pop %es
     pop %ds

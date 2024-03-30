@@ -5,9 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "board.h"
-#include "clock.h"
+#include "clk.h"
 #include "console.h"
 #include "cpu.h"
 #include "debug.h"
@@ -17,13 +18,17 @@
 #include "scheduler.h"
 #include "syscall.h"
 #include "unistd.h"
-#include "update.h"
 
 int task0(void) {
     printf("%s: pid=%d\n", __func__, getpid());
     for (int i = 0; i < 128; i++) {
-        printf("task0: %d\n", i++);
-        hlt();
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        printf("task0: %d - %llu ms\n", i, ts.tv_sec * 1000000000 + ts.tv_nsec);
+
+        ts.tv_sec = 1;
+        ts.tv_nsec = 500000000;
+        clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts);
     }
     return 0;
 }
@@ -57,7 +62,7 @@ void kernel(void) {
     console_bind_uart();
 
     // Initialize the clock system.
-    clock_initialize();
+    clk_initialize();
 
     // Probe devices and instantiate the drivers.
     driver_probes();
@@ -71,8 +76,8 @@ void kernel(void) {
 
     int i = 0;
     while (1) {
-        printf("kernel: %d - %llu ms\n", i, clock_now());
-        i++;
+        // printf("kernel: %d - %llu ms\n", i, clock_now());
         hlt();
+        i++;
     }
 }
