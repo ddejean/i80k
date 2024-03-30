@@ -2,6 +2,7 @@
 
 #include "scheduler.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,16 +33,65 @@ struct task *current;
 // Next available PID.
 static pid_t next_pid;
 
-// List or ready processes.
+// List or ready processes ordered by decreasing priority.
 struct list_node ready = LIST_INITIAL_VALUE(ready);
 
-// List of killed processes.
+// List of killed processes. Not ordered.
 struct list_node zombies = LIST_INITIAL_VALUE(zombies);
 
+static inline struct task *task_get(struct list_node *list) {
+    return list_remove_head_type(list, struct task, node);
+}
+
+static void task_put(struct list_node *list, struct task *task) {
+    struct task *t = NULL;
+
+    if (list_is_empty(list)) {
+        list_add_before(list, &task->node);
+        return;
+    }
+
+    // If the task we want to add has a lower priority than anything else, just
+    // directly add it at the end of the list. It'll save a list traversal.
+    t = list_peek_tail_type(list, struct task, node);
+    if (t && t->prio >= task->prio) {
+        list_add_after(&t->node, &task->node);
+        return;
+    }
+
+    list_for_every_entry(list, t, struct task, node) {
+        if (t->prio < task->prio) {
+            list_add_before(&t->node, &task->node);
+            return;
+        }
+    }
+
+    // We should never reach here.
+    assert(0);
+}
+
+// Kernel idle stack doesn't need to be a big one.
+uint16_t _kernel_idle_stack[16];
+
+// Kernel idle task, does nothing except pause waiting for interrupts.
+int _kernel_idle() {
+    while (1) {
+        hlt();
+    }
+    // This function is never supposed to exit.
+    return 0;
+}
+
 void scheduler_initialize() {
+    // Current kernel task runnning with a standard priority.
     current = calloc(1, sizeof(struct task));
     current->pid = next_pid++;
     current->state = RUNNING;
+    current->prio = 0;
+
+    // Kernel idle task, lowest priority, doing nothing.
+    scheduler_start(_kernel_idle, _kernel_idle_stack,
+                    sizeof(_kernel_idle_stack), -32767);
 }
 
 void schedule() {
@@ -63,7 +113,7 @@ void schedule() {
     // future run.
     if (prev->state == RUNNING) {
         prev->state = READY;
-        list_add_before(&ready, &prev->node);
+        task_put(&ready, prev);
     }
 
     // Switch to the next process.
@@ -76,9 +126,15 @@ void _kthread_bootstrap(int (*fn)(void)) {
     exit(status);
 }
 
-int scheduler_kthread_start(int (*fn)(void), size_t sz) {
+int scheduler_start(int (*fn)(void), void *stack, size_t sz, int prio) {
     struct task *new;
     struct bootstrap_stack *bst;
+
+    if (sz < sizeof(struct bootstrap_stack)) {
+        printf("scheduler: stack too small to start a process (%u bytes)\n",
+               sz);
+        return ERR_INVAL;
+    }
 
     new = calloc(1, sizeof(*new));
     if (!new) {
@@ -86,16 +142,8 @@ int scheduler_kthread_start(int (*fn)(void), size_t sz) {
         return ERR_NO_MEM;
     }
 
-    // 2K stack seems to be a minimum.
-    new->stack = calloc(sz, sizeof(uint8_t));
-    if (!new->stack) {
-        printf("scheduler: failed to allocate %u bytes stack\n", sz);
-        free(new);
-        return ERR_NO_MEM;
-    }
-
     // Put bootstrap values in the bootstrap stack.
-    bst = (struct bootstrap_stack *)(((char *)new->stack) + sz - sizeof(*bst));
+    bst = (struct bootstrap_stack *)(((char *)stack) + sz - sizeof(*bst));
     bst->flags = INTERRUPT_ENABLE_FLAG;
     bst->es = KERNEL_DS;
     bst->ds = KERNEL_DS;
@@ -103,12 +151,15 @@ int scheduler_kthread_start(int (*fn)(void), size_t sz) {
     bst->kthread_start = fn;
 
     // Initialize the process structure.
+    new->stack = stack;
     new->ctx.ss = KERNEL_SS;
     new->ctx.sp = bst;
     new->pid = next_pid++;
+    new->prio = prio;
     new->state = READY;
 
-    list_add_before(&ready, &new->node);
+    // Add the task to the ready list for later scheduling.
+    task_put(&ready, new);
 
     return 0;
 }
@@ -155,5 +206,5 @@ void scheduler_wake_up(struct task *task) {
         return;
     }
     task->state = READY;
-    list_add_before(&ready, &task->node);
+    task_put(&ready, task);
 }

@@ -26,8 +26,10 @@ struct task {
     struct context ctx;
     // Process ID.
     pid_t pid;
+    // Process priority.
+    int prio;
     // Process stack.
-    uint16_t *stack;
+    void *stack;
 
     // Process state.
     enum task_state state;
@@ -40,9 +42,9 @@ struct task {
 // scheduler_initialize prepares the scheduler to manage threads and processes.
 void scheduler_initialize(void);
 
-// scheduler_kthread_start starts a kernel thread running |fn| with a stack of
+// scheduler_start starts a thread running |fn| with a stack of
 // size |sz|.
-int scheduler_kthread_start(int (*fn)(void), size_t sz);
+int scheduler_start(int (*fn)(void), void *stack, size_t sz, int prio);
 
 // scheduler_exit quits the calling process and store the process return code
 // |status|.

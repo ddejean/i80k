@@ -24,7 +24,8 @@ int task0(void) {
     for (int i = 0; i < 128; i++) {
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        printf("task0: %d - %llu ms\n", i, ts.tv_sec * 1000000000 + ts.tv_nsec);
+        printf("task0: %d - %llu ms\n", i,
+               (ts.tv_sec * 1000000000 + ts.tv_nsec) / 1000000);
 
         ts.tv_sec = 1;
         ts.tv_nsec = 500000000;
@@ -71,12 +72,16 @@ void kernel(void) {
     sti();
 
     cli();
-    scheduler_kthread_start(task0, 2046);
+    void *stack = malloc(2046);
+    scheduler_start(task0, stack, 2046, 1);
     sti();
 
     int i = 0;
     while (1) {
-        // printf("kernel: %d - %llu ms\n", i, clock_now());
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        printf("kernel: %d - %llu ms\n", i,
+               (ts.tv_sec * 1000000000 + ts.tv_nsec) / 1000000);
         hlt();
         i++;
     }
