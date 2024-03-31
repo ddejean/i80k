@@ -10,9 +10,7 @@ cc_library(
     hdrs = glob(["*.h"]),
     includes = ["."],
     visibility = ["//visibility:public"],
-    deps = [
-        "//kernel/utils",
-    ] + select({
+    deps = select({
         "@platforms//os:none": ["//libc:c"],
         "@platforms//os:linux": [],
     }),
@@ -29,7 +27,6 @@ cc_test(
     linkopts = ["-lbsd"],
     deps = [
         ":core",
-        "//kernel/utils",
         "@googletest//:gtest_main",
     ],
 )

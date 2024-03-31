@@ -48,7 +48,6 @@ cc_library(
         "//kernel/arch",
         "//kernel/boards:board",
         "//kernel/core",
-        "//kernel/utils",
         "//libc:c",
     ] + select({
         "//platforms/board:rev3": board_rev3_drivers,

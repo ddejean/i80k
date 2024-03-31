@@ -4,6 +4,7 @@
 
 extern "C" {
 #include "blkdev.h"
+#include "error.h"
 #include "fs.h"
 }
 
@@ -91,7 +92,7 @@ TEST_F(FsTest, NormalizePath) {
 }
 
 TEST_F(FsTest, Mount) {
-    EXPECT_EQ(-1, fs_mount("", "testfs", "dev0"));
-    EXPECT_EQ(-1, fs_mount("/", "testfs", ""));
-    EXPECT_EQ(-1, fs_mount("/", "testfs", "dev0"));
+    EXPECT_EQ(ERR_INVAL, fs_mount("", "testfs", "dev0"));
+    EXPECT_EQ(ERR_INVAL, fs_mount("/", "testfs", ""));
+    EXPECT_EQ(ERR_INVAL, fs_mount("/", "testfs", "dev0"));
 }

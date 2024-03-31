@@ -7,8 +7,8 @@
 #include <string.h>
 
 #include "board.h"
+#include "ringbuffer.h"
 #include "uart.h"
-#include "utils/ringbuffer.h"
 
 // Size of the ring buffer.
 #define RINGBUF_SIZE 512
