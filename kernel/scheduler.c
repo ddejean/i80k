@@ -155,13 +155,14 @@ int scheduler_start(int (*fn)(void), void *stack, size_t sz, int prio) {
     new->ctx.ss = KERNEL_SS;
     new->ctx.sp = bst;
     new->pid = next_pid++;
+    new->parent = current->pid;
     new->prio = prio;
     new->state = READY;
 
     // Add the task to the ready list for later scheduling.
     task_put(&ready, new);
 
-    return 0;
+    return new->pid;
 }
 
 void scheduler_exit(int status) {
@@ -189,6 +190,14 @@ pid_t scheduler_getpid() {
         return ERR_NO_ENTRY;
     }
     return current->pid;
+}
+
+int scheduler_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options) {
+    (void)idtype;
+    (void)infop;
+    (void)options;
+    printf("%s: %d\n", __func__, id);
+    return ERR_NOT_SUPP;
 }
 
 void scheduler_sleep_on(struct list_node *queue, void *sleep_data) {

@@ -102,6 +102,10 @@ int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
                                 (const struct timespec *)arg2,
                                 (struct timespec *)arg3);
             break;
+        case 0xf7:
+            ret = scheduler_waitid((idtype_t)arg0, (id_t)arg1,
+                                   (siginfo_t *)arg2, (int)arg3);
+            break;
     }
     return ret;
 }

@@ -20,6 +20,10 @@ typedef unsigned long ulong;
 // Used for file size.
 typedef long off_t;
 
+// Used as a general identifier; can be used to contain at list pid_t, uid_t or
+// gid_t.
+typedef int id_t;
+
 // Used for process IDs and process group IDs.
 typedef int pid_t;
 

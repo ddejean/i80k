@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include "ctx.h"
 #include "list.h"
@@ -26,6 +27,8 @@ struct task {
     struct context ctx;
     // Process ID.
     pid_t pid;
+    // Parent process ID.
+    pid_t parent;
     // Process priority.
     int prio;
     // Process stack.
@@ -55,6 +58,9 @@ void schedule(void);
 
 // scheduler_getpid returns the process ID of the process currently running.
 pid_t scheduler_getpid();
+
+// scheduler_waitid waits for the a process.
+int scheduler_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
 
 // scheduler_sleep_on puts the current process to waiting state, put it in
 // |queue| and sets |sleep_data| as its wait_state.
