@@ -6,6 +6,11 @@
 #include <sys/timespec.h>
 #include <sys/types.h>
 
+struct timeval {
+    time_t tv_sec;
+    suseconds_t tv_usec;
+};
+
 enum clockid {
     CLOCK_REALTIME,
     CLOCK_MONOTONIC,

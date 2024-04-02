@@ -32,5 +32,6 @@ typedef int ssize_t;
 
 typedef unsigned long clock_t;
 typedef long long time_t;
+typedef long long suseconds_t;
 
 #endif  // _SYS_TYPES_H_

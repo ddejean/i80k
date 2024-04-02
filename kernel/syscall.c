@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 #include "board.h"
 #include "clk.h"
@@ -94,6 +95,10 @@ int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
         case 0x3c:
             scheduler_exit((int)arg0);
             break;
+        case 0x3d:
+            ret = scheduler_wait((pid_t)arg0, (int *)arg1, (int)arg2,
+                                 (struct rusage *)arg3);
+            break;
         case 0xe3:
             ret = clk_gettime((clockid_t)arg0, (struct timespec *)arg1);
             break;
@@ -101,10 +106,6 @@ int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
             ret = clk_nanosleep((clockid_t)arg0, (int)arg1,
                                 (const struct timespec *)arg2,
                                 (struct timespec *)arg3);
-            break;
-        case 0xf7:
-            ret = scheduler_waitid((idtype_t)arg0, (id_t)arg1,
-                                   (siginfo_t *)arg2, (int)arg3);
             break;
     }
     return ret;

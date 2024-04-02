@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "board.h"
@@ -39,6 +40,9 @@ struct list_node ready = LIST_INITIAL_VALUE(ready);
 // List of killed processes. Not ordered.
 struct list_node zombies = LIST_INITIAL_VALUE(zombies);
 
+// List of processes waiting for another to die.
+struct list_node waiters = LIST_INITIAL_VALUE(waiters);
+
 static inline struct task *task_get(struct list_node *list) {
     return list_remove_head_type(list, struct task, node);
 }
@@ -70,8 +74,28 @@ static void task_put(struct list_node *list, struct task *task) {
     assert(0);
 }
 
+struct task *task_find(struct list_node *list, pid_t pid) {
+    struct task *t;
+    list_for_every_entry(list, t, struct task, node) {
+        if (t->pid == pid) {
+            return t;
+        }
+    }
+    return NULL;
+}
+
+struct task *task_find_child_of(struct list_node *list, pid_t pid) {
+    struct task *t;
+    list_for_every_entry(list, t, struct task, node) {
+        if (t->parent == pid) {
+            return t;
+        }
+    }
+    return NULL;
+}
+
 // Kernel idle stack doesn't need to be a big one.
-uint16_t _kernel_idle_stack[16];
+uint16_t _kernel_idle_stack[128];
 
 // Kernel idle task, does nothing except pause waiting for interrupts.
 int _kernel_idle() {
@@ -86,8 +110,10 @@ void scheduler_initialize() {
     // Current kernel task runnning with a standard priority.
     current = calloc(1, sizeof(struct task));
     current->pid = next_pid++;
+    current->parent = -1;
     current->state = RUNNING;
     current->prio = 0;
+    list_initialize(&current->node);
 
     // Kernel idle task, lowest priority, doing nothing.
     scheduler_start(_kernel_idle, _kernel_idle_stack,
@@ -103,7 +129,7 @@ void schedule() {
     }
 
     // Get the next process to run.
-    next = list_remove_head_type(&ready, struct task, node);
+    next = task_get(&ready);
 
     // Switch processes internally.
     prev = current;
@@ -182,6 +208,24 @@ void scheduler_exit(int status) {
     // Process exited, let other processes wait on it.
     list_add_before(&zombies, &current->node);
 
+    // Wake-up any process waiting for this one to die.
+    struct task *t, *tmp;
+    list_for_every_entry_safe(&waiters, t, tmp, struct task, node) {
+        pid_t pid = *(pid_t *)t->wait_state;
+        // The waiter explicitely waits for this task.
+        if (pid > 0 && current->pid == pid) {
+            list_delete(&t->node);
+            scheduler_wake_up(t);
+            break;
+        }
+        // The waiter is a parent and waits for one of its children.
+        if (pid == -1 && t->pid == current->parent) {
+            list_delete(&t->node);
+            scheduler_wake_up(t);
+            break;
+        }
+    }
+
     schedule();
 }
 
@@ -192,12 +236,45 @@ pid_t scheduler_getpid() {
     return current->pid;
 }
 
-int scheduler_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options) {
-    (void)idtype;
-    (void)infop;
-    (void)options;
-    printf("%s: %d\n", __func__, id);
-    return ERR_NOT_SUPP;
+pid_t scheduler_wait(pid_t pid, int *wstatus, int options,
+                     struct rusage *usage) {
+    if (pid < -1) {
+        return ERR_NOT_SUPP;
+    }
+
+    // rusage is not supported for now, just zero it out.
+    if (usage) {
+        memset(usage, 0, sizeof(*usage));
+    }
+
+    struct task *t = NULL;
+    do {
+        // Find the task we're waiting for.
+        if (pid == -1) {
+            t = task_find_child_of(&zombies, current->pid);
+        } else {
+            t = task_find(&zombies, pid);
+        }
+        // Task not found, and the call is non blocking.
+        if (!t && (options & WNOHANG)) {
+            // TODO: check the ready list.
+            return 0;
+        }
+        // Task not found, block until (one of) the expected one(s) dies.
+        if (!t) {
+            scheduler_sleep_on(&waiters, &pid);
+        }
+
+    } while (!t);
+
+    pid_t dead_pid = t->pid;
+    if (wstatus) {
+        *wstatus = (t->status & 0xff) << 8;
+    }
+
+    free(t->stack);
+    free(t);
+    return dead_pid;
 }
 
 void scheduler_sleep_on(struct list_node *queue, void *sleep_data) {

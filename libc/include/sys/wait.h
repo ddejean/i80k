@@ -3,7 +3,7 @@
 #ifndef _WAIT_H_
 #define _WAIT_H_
 
-#include <sys/signal.h>
+#include <sys/resource.h>
 #include <sys/types.h>
 
 // Do not hang if no status is available, return immediately.
@@ -28,12 +28,8 @@ pid_t wait(int *wstatus);
 
 pid_t waitpid(pid_t pid, int *wstatus, int options);
 
-typedef enum {
-    P_ALL,
-    P_PGID,
-    P_PID,
-} idtype_t;
+pid_t wait3(int *wstatus, int options, struct rusage *rusage);
 
-int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+pid_t wait4(pid_t pid, int *wstatus, int options, struct rusage *rusage);
 
 #endif  // _WAIT_H_
