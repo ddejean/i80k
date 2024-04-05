@@ -1,16 +1,103 @@
 // Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "blkdev.h"
+#include "board.h"
 #include "cf20_defs.h"
 #include "cpu.h"
 #include "devices.h"
 #include "driver.h"
 #include "error.h"
+#include "interrupts.h"
+#include "list.h"
+#include "scheduler.h"
+
+// List of all the I/O requests waiting to be satisfied.
+struct list_node requests = LIST_INITIAL_VALUE(requests);
+
+// List of the bio request possible states.
+typedef enum {
+    READ_CMD,
+    READ_SECTOR,
+    WRITE_CMD,
+    WRITE_SECTOR,
+    DONE,
+    ERROR,
+} bio_state_t;
+
+#define BIO_SEND(s) ((s) == READ_CMD || (s) == WRITE_CMD)
+#define BIO_RW_SECTOR(s) ((s) == READ_SECTOR || (s) == WRITE_SECTOR)
+#define BIO_DONE(s) ((s) == DONE)
+
+struct bio_request {
+    const struct cf20_private *pdev;
+    bio_state_t state;
+    block_t block;
+    size_t count;
+    uint8_t *buf;
+};
+
+extern void cf20_int_handler(void);
+
+void cf20_handler(void) {
+    struct task *task;
+    struct bio_request *io_req;
+
+    irq_ack(5);
+
+    // No requests to handle, this is a spurious interruption.
+    if (list_is_empty(&requests)) {
+        return;
+    }
+
+    task = list_peek_head_type(&requests, struct task, node);
+    io_req = (struct bio_request *)task->wait_state;
+
+    // The command was already sent to the device, just read the sector that's
+    // ready.
+    if (BIO_RW_SECTOR(io_req->state)) {
+        if (io_req->state == READ_SECTOR) {
+            cf20_read_sector(io_req->pdev, io_req->buf);
+        } else if (io_req->state == WRITE_SECTOR) {
+            cf20_write_sector(io_req->pdev, io_req->buf);
+        }
+        io_req->block++;
+        io_req->count--;
+        io_req->buf += io_req->pdev->sector_sz;
+        if (io_req->count == 0) {
+            io_req->state = DONE;
+        }
+    }
+
+    // I/O request is finished, unblock the task waiting for it and prepare the
+    // next one.
+    if (BIO_DONE(io_req->state)) {
+        printf("cf20: wake up pid=%d\n", task->pid);
+        list_delete(&task->node);
+        scheduler_wake_up(task);
+
+        // Prepare the next task.
+        if (list_is_empty(&requests)) {
+            // No next task, nothing else to do.
+            return;
+        }
+        task = list_peek_head_type(&requests, struct task, node);
+        io_req = (struct bio_request *)task->wait_state;
+    }
+
+    if (BIO_SEND(io_req->state)) {
+        if (io_req->state == READ_CMD) {
+            cf20_send_read_sectors(io_req->pdev, io_req->block, io_req->count);
+        } else if (io_req->state == WRITE_CMD) {
+            cf20_send_write_sectors(io_req->pdev, io_req->block, io_req->count);
+        }
+    }
+}
 
 int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
                     size_t count) {
@@ -20,29 +107,25 @@ int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
         return ERR_INVAL;
     }
 
-    // 0 is a special value for 256.
-    outb(pdev->regs.sector_count, count < 256 ? count : 0);
-    outb(pdev->regs.lba_low, block);
-    outb(pdev->regs.lba_mid, block >> 8);
-    outb(pdev->regs.lba_high, block >> 16);
-    outb(pdev->regs.card_head,
-         CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
-    outb(pdev->regs.cmd, CMD_READ_SECTORS);
+    struct bio_request *io_req = calloc(1, sizeof(*io_req));
+    io_req->pdev = pdev;
+    io_req->block = block;
+    io_req->count = count;
+    io_req->buf = buf;
 
-    int bytes_read = 0;
-    uint8_t *buffer = (uint8_t *)buf;
-    for (unsigned int sector = 0; sector < count; sector++) {
-        while (inb(pdev->regs.status) & SR_BSY)
-            ;
-        while ((inb(pdev->regs.status) & SR_DRQ) != SR_DRQ)
-            ;
-
-        for (int byte = 0; byte < CF20_SECTOR_SIZE; byte++) {
-            *buffer = inb(pdev->regs.data);
-            buffer++;
-            bytes_read++;
-        }
+    if (list_is_empty(&requests)) {
+        // Send a read sector command to the card.
+        cf20_send_read_sectors(pdev, block, count);
+        io_req->state = READ_SECTOR;
+    } else {
+        io_req->state = READ_CMD;
     }
+
+    // Block waiting for the answer.
+    scheduler_sleep_on(&requests, io_req);
+
+    int bytes_read = (count - io_req->count) * pdev->sector_sz;
+    free(io_req);
     return bytes_read;
 }
 
@@ -54,29 +137,25 @@ int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
         return ERR_INVAL;
     }
 
-    // 0 is a special value for 256.
-    outb(pdev->regs.sector_count, count < 256 ? count : 0);
-    outb(pdev->regs.lba_low, block);
-    outb(pdev->regs.lba_mid, block >> 8);
-    outb(pdev->regs.lba_high, block >> 16);
-    outb(pdev->regs.card_head,
-         CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
-    outb(pdev->regs.cmd, CMD_WRITE_SECTORS);
+    struct bio_request *io_req = calloc(1, sizeof(*io_req));
+    io_req->pdev = pdev;
+    io_req->block = block;
+    io_req->count = count;
+    io_req->buf = (void *)buf;
 
-    int bytes_written = 0;
-    uint8_t *buffer = (uint8_t *)buf;
-    for (unsigned int sector = 0; sector < count; sector++) {
-        while (inb(pdev->regs.status) & SR_BSY)
-            ;
-        while ((inb(pdev->regs.status) & SR_DRQ) != SR_DRQ)
-            ;
-
-        for (int byte = 0; byte < CF20_SECTOR_SIZE; byte++) {
-            outb(pdev->regs.data, *buffer);
-            buffer++;
-            bytes_written++;
-        }
+    if (list_is_empty(&requests)) {
+        // Send a read sector command to the card.
+        cf20_send_write_sectors(pdev, block, count);
+        io_req->state = WRITE_SECTOR;
+    } else {
+        io_req->state = WRITE_CMD;
     }
+
+    // Block waiting for the answer.
+    scheduler_sleep_on(&requests, io_req);
+
+    int bytes_written = (count - io_req->count) * pdev->sector_sz;
+    free(io_req);
     return bytes_written;
 }
 
@@ -107,6 +186,7 @@ bool cf20_probe(void) {
     }
 
     // Fill driver private's data.
+    pdev->sector_sz = CF20_SECTOR_SIZE;
     pdev->regs.data = REG_DATA(cfg->port);
     pdev->regs.error = REG_ERROR(cfg->port);
     pdev->regs.features = REG_FEATURES(cfg->port);
@@ -117,6 +197,7 @@ bool cf20_probe(void) {
     pdev->regs.card_head = REG_CARD_HEAD(cfg->port);
     pdev->regs.cmd = REG_CMD(cfg->port);
     pdev->regs.status = REG_STATUS(cfg->port);
+    pdev->regs.dev_ctrl = REG_STATUS(cfg->port);
 
     // If the device is wired on a 8 bits bus, the 8 bits mode has to be enabled
     // before any other communication.
@@ -148,6 +229,12 @@ bool cf20_probe(void) {
         printf("CF: card does no support LBA\n");
         goto error;
     }
+
+    // Enable interrupts.
+    interrupts_handle(interrupts_from_irq(cfg->irq), KERNEL_CS,
+                      cf20_int_handler);
+    irq_enable(cfg->irq);
+    outb(pdev->regs.dev_ctrl, 0);
 
     // Create the block device.
     dev = calloc(1, sizeof(*dev));

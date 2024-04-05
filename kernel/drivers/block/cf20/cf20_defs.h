@@ -20,6 +20,7 @@
 #define REG_CARD_HEAD(p) (p + 6)
 #define REG_CMD(p) (p + 7)
 #define REG_STATUS(p) (p + 7)
+#define REG_DEV_CTRL(p) (p + 14)
 
 // Status register.
 #define SR_ERR (1 << 2)
@@ -65,8 +66,14 @@
 #define CAP_LBA (1 << 9)
 #define CAP_DMA (1 << 8)
 
+// Device control register.
+#define DEV_DISABLE_INT (1 << 1)
+#define DEV_SOFTWARE_RST (1 << 2)
+
 // Driver private data.
 struct cf20_private {
+    // Device sector size.
+    size_t sector_sz;
     // Device registers.
     struct {
         uint16_t data;
@@ -79,6 +86,7 @@ struct cf20_private {
         uint16_t card_head;
         uint16_t cmd;
         uint16_t status;
+        uint16_t dev_ctrl;
     } regs;
 };
 
@@ -125,5 +133,23 @@ bool cf20_set_feature(const struct cf20_private *pdev, uint8_t feature,
 
 // cf20_get_identity retrieves the card identity, parses the result in |id|.
 bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id);
+
+// cf20_send_read_sectors sends a read command to the cf card to read |count|
+// sectors starting at |block|.
+void cf20_send_read_sectors(const struct cf20_private *pdev, block_t block,
+                            size_t count);
+
+// cf20_send_write_sectors sends a write command to the cf card to write |count|
+// sectors starting at |block|.
+void cf20_send_write_sectors(const struct cf20_private *pdev, block_t block,
+                             size_t count);
+
+// cf20_read_sector reads a sector from the card, assuming the read command was
+// already sent and acknoledged with an interrupt.
+void cf20_read_sector(const struct cf20_private *dev, uint8_t *buf);
+
+// cf20_write_sector sends a sector to the card, assuming the write command was
+// already sent and acknoledged with an interrupt.
+void cf20_write_sector(const struct cf20_private *pdev, uint8_t *buf);
 
 #endif  // _CF20_DEFS_H_

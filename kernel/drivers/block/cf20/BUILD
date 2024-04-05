@@ -5,6 +5,7 @@ cc_library(
     srcs = glob([
         "*.c",
         "*.h",
+        "*.S",
     ]),
     visibility = ["//kernel/drivers:__pkg__"],
     deps = [

@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
+#include "blkdev.h"
 #include "cf20_defs.h"
 #include "cpu.h"
 
@@ -28,10 +30,15 @@ bool cf20_set_feature(const struct cf20_private *pdev, uint8_t feature,
     return true;
 }
 
-// Buffer used internally to query a sector.
-static uint16_t buf[CF20_SECTOR_SIZE / 2];
-
 bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id) {
+    uint16_t *buf;
+
+    buf = malloc(pdev->sector_sz / sizeof(*buf));
+    if (!buf) {
+        return false;
+    }
+
+    // Send the CF Identity commande.
     outb(pdev->regs.card_head, CHR_CARD0);
     outb(pdev->regs.cmd, CMD_IDENTIFY);
 
@@ -40,7 +47,7 @@ bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id) {
 
     // Pull the whole sector in a buffer.
     uint8_t *in_buf = (uint8_t *)buf;
-    for (int i = 0; i < CF20_SECTOR_SIZE; i++) {
+    for (size_t i = 0; i < pdev->sector_sz; i++) {
         in_buf[i] = inb(pdev->regs.data);
     }
 
@@ -49,6 +56,7 @@ bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id) {
     if (buf[0] != CF20_SIGNATURE) {
         // The signature is not correct, we can't expect the end of the buffer
         // to be valid.
+        free(buf);
         return false;
     }
     // Default number of cylinders
@@ -148,5 +156,44 @@ bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id) {
     // Key management schemes supported.
     id->key_mgmt_schemes = buf[162];
 
+    free(buf);
     return true;
+}
+
+void cf20_send_read_sectors(const struct cf20_private *pdev, block_t block,
+                            size_t count) {
+    // 0 is a special value for 256.
+    outb(pdev->regs.sector_count, count < 256 ? count : 0);
+    outb(pdev->regs.lba_low, block);
+    outb(pdev->regs.lba_mid, block >> 8);
+    outb(pdev->regs.lba_high, block >> 16);
+    outb(pdev->regs.card_head,
+         CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
+    outb(pdev->regs.cmd, CMD_READ_SECTORS);
+}
+
+void cf20_send_write_sectors(const struct cf20_private *pdev, block_t block,
+                             size_t count) {
+    // 0 is a special value for 256.
+    outb(pdev->regs.sector_count, count < 256 ? count : 0);
+    outb(pdev->regs.lba_low, block);
+    outb(pdev->regs.lba_mid, block >> 8);
+    outb(pdev->regs.lba_high, block >> 16);
+    outb(pdev->regs.card_head,
+         CHR_CARD0 | CHR_LBA | ((block >> 24) & CHR_HEAD_MASK));
+    outb(pdev->regs.cmd, CMD_WRITE_SECTORS);
+}
+
+void cf20_read_sector(const struct cf20_private *pdev, uint8_t *buf) {
+    for (size_t byte = 0; byte < pdev->sector_sz; byte++) {
+        *buf = inb(pdev->regs.data);
+        buf++;
+    }
+}
+
+void cf20_write_sector(const struct cf20_private *pdev, uint8_t *buf) {
+    for (size_t byte = 0; byte < pdev->sector_sz; byte++) {
+        outb(pdev->regs.data, *buf);
+        buf++;
+    }
 }
