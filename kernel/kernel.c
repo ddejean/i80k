@@ -15,6 +15,7 @@
 #include "driver.h"
 #include "fs.h"
 #include "heap.h"
+#include "kthread.h"
 #include "scheduler.h"
 #include "syscall.h"
 #include "unistd.h"
@@ -47,6 +48,7 @@ void kernel(void) {
     syscall_setup();
     // Prepares the scheduler to manage thread and processes.
     scheduler_initialize();
+    kthread_initialize();
 
     printf("Kernel loaded:\n");
     printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
@@ -72,8 +74,7 @@ void kernel(void) {
     sti();
 
     cli();
-    void *stack = malloc(2046);
-    scheduler_start(task0, stack, 2046, 1);
+    kthread_start(task0, 2046, 1);
     sti();
 
     int i = 0;

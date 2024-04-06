@@ -9,24 +9,9 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "board.h"
-#include "cpu.h"
 #include "ctx.h"
 #include "error.h"
 #include "list.h"
-
-// Helper to fill the initial stack.
-struct bootstrap_stack {
-    uint16_t flags;
-    uint16_t es;
-    uint16_t ds;
-    uint16_t di;
-    uint16_t si;
-    uint16_t bp;
-    void (*boostrap)(int (*fn)(void));
-    uint16_t _ignored;
-    int (*kthread_start)(void);
-};
 
 // Current running process.
 struct task *current;
@@ -94,18 +79,6 @@ struct task *task_find_child_of(struct list_node *list, pid_t pid) {
     return NULL;
 }
 
-// Kernel idle stack doesn't need to be a big one.
-uint16_t _kernel_idle_stack[128];
-
-// Kernel idle task, does nothing except pause waiting for interrupts.
-int _kernel_idle() {
-    while (1) {
-        hlt();
-    }
-    // This function is never supposed to exit.
-    return 0;
-}
-
 void scheduler_initialize() {
     // Current kernel task runnning with a standard priority.
     current = calloc(1, sizeof(struct task));
@@ -114,10 +87,6 @@ void scheduler_initialize() {
     current->state = RUNNING;
     current->prio = 0;
     list_initialize(&current->node);
-
-    // Kernel idle task, lowest priority, doing nothing.
-    scheduler_start(_kernel_idle, _kernel_idle_stack,
-                    sizeof(_kernel_idle_stack), -32767);
 }
 
 void schedule() {
@@ -147,48 +116,17 @@ void schedule() {
     ctx_switch(&prev->ctx, &next->ctx);
 }
 
-void _kthread_bootstrap(int (*fn)(void)) {
-    int status = fn();
-    exit(status);
-}
-
-int scheduler_start(int (*fn)(void), void *stack, size_t sz, int prio) {
-    struct task *new;
-    struct bootstrap_stack *bst;
-
-    if (sz < sizeof(struct bootstrap_stack)) {
-        printf("scheduler: stack too small to start a process (%u bytes)\n",
-               sz);
-        return ERR_INVAL;
-    }
-
-    new = calloc(1, sizeof(*new));
-    if (!new) {
-        printf("scheduler: failed to allocate task\n");
-        return ERR_NO_MEM;
-    }
-
-    // Put bootstrap values in the bootstrap stack.
-    bst = (struct bootstrap_stack *)(((char *)stack) + sz - sizeof(*bst));
-    bst->flags = INTERRUPT_ENABLE_FLAG;
-    bst->es = KERNEL_DS;
-    bst->ds = KERNEL_DS;
-    bst->boostrap = _kthread_bootstrap;
-    bst->kthread_start = fn;
-
+int scheduler_queue_new(struct task *t, int prio) {
     // Initialize the process structure.
-    new->stack = stack;
-    new->ctx.ss = KERNEL_SS;
-    new->ctx.sp = bst;
-    new->pid = next_pid++;
-    new->parent = current->pid;
-    new->prio = prio;
-    new->state = READY;
+    t->pid = next_pid++;
+    t->parent = current->pid;
+    t->prio = prio;
+    t->state = READY;
 
-    // Add the task to the ready list for later scheduling.
-    task_put(&ready, new);
+    // Add the task to the ready list.
+    task_put(&ready, t);
 
-    return new->pid;
+    return t->pid;
 }
 
 void scheduler_exit(int status) {
@@ -238,13 +176,11 @@ pid_t scheduler_getpid() {
 
 pid_t scheduler_wait(pid_t pid, int *wstatus, int options,
                      struct rusage *usage) {
+    // rusage is not used for now.
+    (void)usage;
+
     if (pid < -1) {
         return ERR_NOT_SUPP;
-    }
-
-    // rusage is not supported for now, just zero it out.
-    if (usage) {
-        memset(usage, 0, sizeof(*usage));
     }
 
     struct task *t = NULL;

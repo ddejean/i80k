@@ -1,4 +1,4 @@
-# Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+# Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
 cc_library(
     name = "core",
@@ -11,8 +11,13 @@ cc_library(
     includes = ["."],
     visibility = ["//visibility:public"],
     deps = select({
-        "@platforms//os:none": ["//libc:c"],
-        "@platforms//os:linux": [],
+        "@platforms//os:none": [
+            "//kernel/arch",
+            "//libc:c",
+        ],
+        "@platforms//os:linux": [
+            "//kernel/core/stubs",
+        ],
     }),
 )
 

@@ -45,9 +45,9 @@ struct task {
 // scheduler_initialize prepares the scheduler to manage threads and processes.
 void scheduler_initialize(void);
 
-// scheduler_start starts a thread running |fn| with a stack of
-// size |sz|.
-int scheduler_start(int (*fn)(void), void *stack, size_t sz, int prio);
+// scheduler_queue_new queues a new task into the scheduler ready list with
+// |prio| priority. Returns the PID of the newly started process.
+int scheduler_queue_new(struct task *t, int prio);
 
 // scheduler_exit quits the calling process and store the process return code
 // |status|.
