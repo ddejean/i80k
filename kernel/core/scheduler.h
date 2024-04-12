@@ -7,40 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "ctx.h"
-#include "list.h"
-
-// Process state.
-enum task_state {
-    READY,
-    RUNNING,
-    WAITING,
-    ZOMBIE,
-};
-
-// Represents a process.
-struct task {
-    // List node of the processes list.
-    struct list_node node;
-
-    // Process context.
-    struct context ctx;
-    // Process ID.
-    pid_t pid;
-    // Parent process ID.
-    pid_t parent;
-    // Process priority.
-    int prio;
-    // Process stack.
-    void *stack;
-
-    // Process state.
-    enum task_state state;
-    // Process return value.
-    int status;
-    // Private data use for wait condition.
-    void *wait_state;
-};
+#include "task.h"
 
 // scheduler_initialize prepares the scheduler to manage threads and processes.
 void scheduler_initialize(void);
@@ -55,6 +22,9 @@ void scheduler_exit(int status);
 
 // schedule stops the current process and runs the next one.
 void schedule(void);
+
+// scheduler_current returns the task currently runnning.
+struct task *scheduler_current(void);
 
 // scheduler_getpid returns the process ID of the process currently running.
 pid_t scheduler_getpid();

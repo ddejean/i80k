@@ -2,7 +2,10 @@
 
 cc_library(
     name = "stubs",
-    srcs = glob(["*.h"]),
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]),
     includes = ["."],
     visibility = ["//kernel/core:__pkg__"],
 )

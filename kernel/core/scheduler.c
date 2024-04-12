@@ -116,6 +116,8 @@ void schedule() {
     ctx_switch(&prev->ctx, &next->ctx);
 }
 
+struct task *scheduler_current(void) { return current; }
+
 int scheduler_queue_new(struct task *t, int prio) {
     // Initialize the process structure.
     t->pid = next_pid++;

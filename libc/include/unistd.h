@@ -21,4 +21,16 @@ void *sbrk(intptr_t increment);
 // getpid returns the process ID (PID) of the calling process.
 pid_t getpid(void);
 
+// read attempts to read up to |count| bytes from file description |fd| into
+// buffer starting at |buf|.
+ssize_t read(int fd, void *buf, size_t count);
+
+// write writes up to |count|bytes from the buffer starting at |buf| to the file
+// referred to by the file descriptor |fd|.
+ssize_t write(int fd, const void *buf, size_t count);
+
+// close closes a file descriptor, so that it no longer refers to any file and
+// may be reused.
+int close(int fd);
+
 #endif  // _UNISTD_H_

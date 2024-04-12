@@ -5,9 +5,6 @@
 
 struct context {};
 
-void ctx_switch(struct context *prev, struct context *next) {
-    (void)prev;
-    (void)next;
-}
+void ctx_switch(struct context *prev, struct context *next);
 
 #endif  // _CTX_H_

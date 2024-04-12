@@ -13,6 +13,7 @@
 #include "heap.h"
 #include "interrupts.h"
 #include "scheduler.h"
+#include "syscall_fs.h"
 
 // Syscall interrupts handlers provided by syscall_handlers.S.
 extern void int3_handler(void);
@@ -86,6 +87,18 @@ int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
     int ret = -1;
 
     switch (nr) {
+        case 0x0:
+            ret = sys_read((int)arg0, (void *)arg1, (size_t)arg2);
+            break;
+        case 0x1:
+            ret = sys_write((int)arg0, (const void *)arg1, (size_t)arg2);
+            break;
+        case 0x2:
+            ret = sys_open((const char *)arg0, (int)arg1, (int)arg2);
+            break;
+        case 0x3:
+            ret = sys_close((int)arg0);
+            break;
         case 0x27:
             ret = scheduler_getpid();
             break;

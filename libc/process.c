@@ -37,9 +37,9 @@ pid_t wait4(pid_t pid, int *wstatus, int options, struct rusage *rusage) {
     __asm__ __volatile__(
         "mov $0x3d, %%ax\n"
         "mov %1, %%bx\n"
-        "mov %1, %%cx\n"
-        "mov %1, %%dx\n"
-        "mov %1, %%si\n"
+        "mov %2, %%cx\n"
+        "mov %3, %%dx\n"
+        "mov %4, %%si\n"
         "int $0x80\n"
         "mov %%ax, %0\n"
         : "=r"(ret)
