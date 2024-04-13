@@ -1,39 +1,16 @@
-// Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
+// Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
-#include <assert.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
 #include "board.h"
 #include "clk.h"
 #include "console.h"
 #include "cpu.h"
-#include "debug.h"
 #include "driver.h"
-#include "fs.h"
 #include "heap.h"
 #include "kthread.h"
 #include "scheduler.h"
 #include "syscall.h"
-#include "unistd.h"
-
-int task0(void) {
-    printf("%s: pid=%d\n", __func__, getpid());
-    for (int i = 0; i < 128; i++) {
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        printf("task0: %d - %llu ms\n", i,
-               (ts.tv_sec * 1000000000 + ts.tv_nsec) / 1000000);
-
-        ts.tv_sec = 1;
-        ts.tv_nsec = 500000000;
-        clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &ts);
-    }
-    return 0;
-}
 
 // Kernel C entry point.
 // cs is the code segment where the kernel runs provided by crt0.S.
@@ -48,6 +25,7 @@ void kernel(void) {
     syscall_setup();
     // Prepares the scheduler to manage thread and processes.
     scheduler_initialize();
+    // Start minimal kernel threads.
     kthread_initialize();
 
     printf("Kernel loaded:\n");
@@ -70,20 +48,8 @@ void kernel(void) {
     // Probe devices and instantiate the drivers.
     driver_probes();
 
-    cli();
-    sti();
-
-    cli();
-    kthread_start(task0, 2046, 1);
-    sti();
-
-    int i = 0;
+    printf("Kernel booted!\n");
     while (1) {
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        printf("kernel: %d - %llu ms\n", i,
-               (ts.tv_sec * 1000000000 + ts.tv_nsec) / 1000000);
         hlt();
-        i++;
     }
 }
