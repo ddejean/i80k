@@ -9,6 +9,7 @@
 #include "driver.h"
 #include "heap.h"
 #include "kthread.h"
+#include "mem.h"
 #include "scheduler.h"
 #include "syscall.h"
 
@@ -23,6 +24,8 @@ void kernel(void) {
     console_initialize();
     // Prepares the interrupt system to allow the syscalls to be operational.
     syscall_setup();
+    // Prepares the memory subsystem to manage the entire board memory.
+    mem_initialize();
     // Prepares the scheduler to manage thread and processes.
     scheduler_initialize();
     // Start minimal kernel threads.

@@ -74,6 +74,28 @@ struct timer timer2 = {
 
 DEVICE(timer2, p8254, timer2);
 
+struct memmap map = {
+    .kernel =
+        {
+            .cs = KERNEL_CS,
+            .ds = KERNEL_DS,
+            .ss = KERNEL_SS,
+            .stack = (void *)KERNEL_STACK_LOW,
+        },
+    .rom =
+        {
+            .segment = 0xE000,
+            .count = 2,
+        },
+    .ram =
+        {
+            .segment = 0x1000,
+            .count = 13,
+        },
+};
+
+DEVICE(memmap, memmap, map);
+
 struct cfi_flash rom = {
     .vendor_id = 0xbf,        // Manufacturer SST
     .chip_id = 0xb5,          // Chip SST39SF010A

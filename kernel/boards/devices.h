@@ -4,6 +4,7 @@
 #define _DEVICES_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // IO devices categories.
@@ -22,6 +23,36 @@ struct io_device {
             unsigned long freq;
         } uart;
     } u;
+};
+
+struct memmap {
+    // Kernel memory layout.
+    struct {
+        // Kernel code segment.
+        uint16_t cs;
+        // Kernel data segment.
+        uint16_t ds;
+        // Kernel stack segment.
+        uint16_t ss;
+        // Kernel stack start address.
+        void *stack;
+    } kernel;
+
+    // ROM memory layout.
+    struct {
+        // ROM start segment.
+        uint16_t segment;
+        // Number of segments the ROM occupies.
+        size_t count;
+    } rom;
+
+    // RAM memory layout.
+    struct {
+        // RAM start segment.
+        uint16_t segment;
+        // Number of segments the RAM occupies.
+        size_t count;
+    } ram;
 };
 
 struct cfi_flash {
