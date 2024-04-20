@@ -1,3 +1,2 @@
 CompileFlags:
-  Add: [-Wall, -Werror, -nostdinc, -I, libc/include, -I, kernel/boards, -I, kernel/boards/8088-rev3, -I, kernel/arch, -I, kernel/core, -I, kernel/drivers/include, -I, kernel/utils, -I, toolchains/gcc-ia16/lib/gcc/ia16-elf/6.3.0/include]
-
+  Remove: [-march=*, -mabi=*, -mcpu=*, -mtune=*]

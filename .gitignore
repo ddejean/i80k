@@ -2,4 +2,5 @@
 bazel-*
 toolchains/ia16-elf
 MODULE.bazel.lock
+compile_commands.json
 
