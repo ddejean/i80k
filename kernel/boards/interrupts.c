@@ -12,7 +12,7 @@
 
 // Interrupt Descriptor Table start at address 0x00000 with 256 entries.
 // The location of the table is handled by the linker script (kernel.lds).
-void __far* idt[IDT_ENTRIES] __attribute__((section(".idt")));
+void far* idt[IDT_ENTRIES] __attribute__((section(".idt")));
 
 // Interrupt controller(s).
 static const struct pic* p;
