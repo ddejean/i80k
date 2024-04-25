@@ -6,11 +6,15 @@
 #ifndef _FMEM_H_
 #define _FMEM_H_
 
-#ifdef __IA16_ARCH_ANY
+#ifdef __IA16_ARCH_I8088
 #define far __far
 #else
 #define far
 #endif
+
+// A containerof implementation that takes far pointer into account.
+#define fcontainerof(ptr, type, member) \
+    ((type far*)((char far*)(ptr) - offsetof(type, member)))
 
 // Far pointer type helpers
 typedef void far* void_fptr_t;

@@ -8,6 +8,7 @@
 
 #include "devices.h"
 #include "fmem.h"
+#include "page.h"
 
 #define MEM_MAGIC0 0x55AA
 #define MEM_MAGIC1 0xAA55
@@ -37,12 +38,16 @@ void mem_initialize(void) {
     // The memory map is located in the config.
     map = (struct memmap *)dev->config;
 
+    // Initialize the page management subsystem.
+    page_initialize();
+
     // Check the memory.
     uint16_t seg = map->ram.segment;
     for (size_t i = 0; i < map->ram.count; i++) {
         if (!mem_check_segment(seg)) {
             printf("mem: bad memory area %04x:0000\n", seg);
         }
+        page_add(fmem_void_fptr(seg, (void *)0), 6);
         // Move one segment further.
         seg += 0x1000;
     }
