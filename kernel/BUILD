@@ -10,8 +10,10 @@ cc_binary(
         ],
     ),
     additional_linker_inputs = ["//kernel/boards:lds"],
+    features = [
+        "no_stdlib",
+    ],
     linkopts = [
-        "-nostdlib",
         "-T $(location //kernel/boards:lds)",
     ],
     deps = [

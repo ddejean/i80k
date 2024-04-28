@@ -1,41 +1,13 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
 load(
-    "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "@rules_cc//cc:cc_toolchain_config_lib.bzl",
     "feature",
     "flag_group",
     "flag_set",
     "tool_path",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-
-all_actions = [
-    ACTION_NAMES.assemble,
-    ACTION_NAMES.preprocess_assemble,
-    ACTION_NAMES.linkstamp_compile,
-    ACTION_NAMES.c_compile,
-    ACTION_NAMES.cpp_compile,
-    ACTION_NAMES.cpp_header_parsing,
-    ACTION_NAMES.cpp_module_compile,
-    ACTION_NAMES.cpp_module_codegen,
-    ACTION_NAMES.lto_backend,
-    ACTION_NAMES.clif_match,
-    ACTION_NAMES.cpp_link_executable,
-]
-
-compile_actions = [
-    ACTION_NAMES.assemble,
-    ACTION_NAMES.preprocess_assemble,
-    ACTION_NAMES.linkstamp_compile,
-    ACTION_NAMES.cpp_compile,
-    ACTION_NAMES.cpp_header_parsing,
-    ACTION_NAMES.cpp_module_compile,
-    ACTION_NAMES.cpp_module_codegen,
-    ACTION_NAMES.lto_backend,
-    ACTION_NAMES.clif_match,
-    ACTION_NAMES.assemble,
-    ACTION_NAMES.c_compile,
-]
+load("@rules_cc//cc:action_names.bzl", "ACTION_NAME_GROUPS")
 
 def _impl(ctx):
     # Compiler tools paths.
@@ -76,12 +48,12 @@ def _impl(ctx):
 
     # Add the -no-canonical-prefixes flag to all compilation steps to ensure GCC
     # is not using an absolute path for the system headers.
-    no_prefix_compile_flags_feature = feature(
-        name = "no_prefix_compile_flags",
+    no_canonical_prefixes_feature = feature(
+        name = "no_canonical_prefixes",
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = compile_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -99,7 +71,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = compile_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -116,7 +88,7 @@ def _impl(ctx):
         name = "treat_warnings_as_errors",
         flag_sets = [
             flag_set(
-                actions = compile_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(flags = ["-Werror"]),
                 ],
@@ -128,7 +100,7 @@ def _impl(ctx):
         name = "all_warnings",
         flag_sets = [
             flag_set(
-                actions = compile_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(flags = ["-Wall"]),
                 ],
@@ -140,7 +112,7 @@ def _impl(ctx):
         name = "extra_warnings",
         flag_sets = [
             flag_set(
-                actions = compile_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(flags = ["-Wextra"]),
                 ],
@@ -149,15 +121,12 @@ def _impl(ctx):
     )
 
     # Tell the linker where to find GCC builtins library.
-    toolchain_linker_flags_feature = feature(
-        name = "linker_flags",
+    default_linker_flags_feature = feature(
+        name = "default_linker_flags",
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.cpp_link_executable,
-                    ACTION_NAMES.cpp_link_dynamic_library,
-                ],
+                actions = ACTION_NAME_GROUPS.all_cc_link_actions,
                 flag_groups = [
                     flag_group(flags = [
                         "-L",
@@ -169,11 +138,23 @@ def _impl(ctx):
         ],
     )
 
+    no_stdlib_feature = feature(
+        name = "no_stdlib",
+        flag_sets = [
+            flag_set(
+                actions = ACTION_NAME_GROUPS.all_cc_link_actions,
+                flag_groups = [
+                    flag_group(flags = ["-nostdlib"]),
+                ],
+            ),
+        ],
+    )
+
     tiny_memory_model_feature = feature(
         name = "tiny_memory_model",
         flag_sets = [
             flag_set(
-                actions = all_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(flags = ["-mcmodel=tiny"]),
                 ],
@@ -185,7 +166,7 @@ def _impl(ctx):
         name = "small_memory_model",
         flag_sets = [
             flag_set(
-                actions = all_actions,
+                actions = ACTION_NAME_GROUPS.all_cc_compile_actions,
                 flag_groups = [
                     flag_group(flags = ["-mcmodel=small"]),
                 ],
@@ -202,12 +183,13 @@ def _impl(ctx):
         ctx = ctx,
         cxx_builtin_include_directories = cxx_builtin_include_directories,
         features = [
-            no_prefix_compile_flags_feature,
+            no_canonical_prefixes_feature,
             arch_compile_flags_feature,
             treat_warnings_as_errors_feature,
             all_warnings_feature,
             extra_warnings_feature,
-            toolchain_linker_flags_feature,
+            default_linker_flags_feature,
+            no_stdlib_feature,
             tiny_memory_model_feature,
             small_memory_model_feature,
         ],
