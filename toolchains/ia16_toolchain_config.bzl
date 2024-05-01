@@ -140,6 +140,7 @@ def _impl(ctx):
 
     no_stdlib_feature = feature(
         name = "no_stdlib",
+        enabled = True,
         flag_sets = [
             flag_set(
                 actions = ACTION_NAME_GROUPS.all_cc_link_actions,

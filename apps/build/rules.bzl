@@ -15,9 +15,5 @@ def i80k_binary(name, **kwargs):
         linkopts = kwargs.pop("linkopts", []) + [
             "-T$(location //apps/build:lds)",
         ],
-        # Do not link to standard libraries if any.
-        features = kwargs.pop("features", []) + [
-            "no_stdlib",
-        ],
         **kwargs
     )
