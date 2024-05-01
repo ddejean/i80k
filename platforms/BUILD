@@ -31,3 +31,12 @@ platform(
         "//platforms/board:vboard",
     ],
 )
+
+platform(
+    name = "i80k-8088",
+    constraint_values = [
+        "//platforms/os:i80k",
+        "//platforms/cpu:ia16",
+        "//platforms/cpu:8088",
+    ],
+)
