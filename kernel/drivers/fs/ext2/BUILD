@@ -1,6 +1,8 @@
 # Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "ext2",
     srcs = glob([
         "*.c",
@@ -9,7 +11,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//kernel/core",
-        "//libc:c",
     ],
     alwayslink = True,
 )

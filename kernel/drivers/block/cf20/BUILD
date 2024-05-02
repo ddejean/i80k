@@ -1,6 +1,8 @@
 # Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "cf20",
     srcs = glob([
         "*.c",
@@ -13,7 +15,6 @@ cc_library(
         "//kernel/boards:board",
         "//kernel/core",
         "//kernel/drivers:libdriver",
-        "//libc:c",
     ],
     alwayslink = True,
 )

@@ -1,6 +1,8 @@
 # Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "core",
     srcs = glob([
         "*.h",
@@ -9,11 +11,13 @@ cc_library(
     ]),
     hdrs = glob(["*.h"]),
     includes = ["."],
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//kernel:__pkg__",
+        "//kernel/drivers:__subpackages__",
+    ],
     deps = select({
         "@platforms//os:none": [
             "//kernel/arch",
-            "//libc:c",
         ],
         "@platforms//os:linux": [
             "//kernel/core/stubs",

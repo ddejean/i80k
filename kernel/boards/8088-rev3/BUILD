@@ -1,6 +1,8 @@
 # Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "board-rev3",
     srcs = glob([
         "*.h",
@@ -16,7 +18,6 @@ cc_library(
         "//kernel/boards:libboard",
         "//kernel/boards/drivers:p8254",
         "//kernel/boards/drivers:p8259a",
-        "//libc:c",
     ],
     # Required to ensure bootstrap and crt0 files are included even if their
     # symbols are not referenced anywhere.

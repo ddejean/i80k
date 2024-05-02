@@ -1,5 +1,7 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
+load("//kernel/build:rules.bzl", "i80k_library")
+
 # Drivers for the board revision 2.
 filegroup(
     name = "srcs-rev2",
@@ -33,7 +35,7 @@ board_rev3_drivers = [
     "//kernel/drivers/fs/ext2",
 ]
 
-cc_library(
+i80k_library(
     name = "drivers",
     srcs = select({
         "//platforms/board:rev2": [":srcs-rev2"],
@@ -48,7 +50,6 @@ cc_library(
         "//kernel/arch",
         "//kernel/boards:board",
         "//kernel/core",
-        "//libc:c",
     ] + select({
         "//platforms/board:rev3": board_rev3_drivers,
         "//conditions:default": [],
@@ -56,7 +57,7 @@ cc_library(
     alwayslink = True,
 )
 
-cc_library(
+i80k_library(
     name = "libdriver",
     srcs = [
         "driver.c",
@@ -67,8 +68,5 @@ cc_library(
     visibility = [
         ":__subpackages__",
         "//kernel:__pkg__",
-    ],
-    deps = [
-        "//libc:c",
     ],
 )

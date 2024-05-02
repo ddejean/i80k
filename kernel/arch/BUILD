@@ -1,6 +1,8 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "arch",
     srcs = glob([
         "*.h",
@@ -10,5 +12,4 @@ cc_library(
     hdrs = glob(["*.h"]),
     includes = ["."],
     visibility = ["//visibility:public"],
-    deps = ["//libc:c"],
 )

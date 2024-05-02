@@ -1,6 +1,6 @@
 # Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
-def i80k_binary(name, **kwargs):
+def app_binary(name, **kwargs):
     native.cc_binary(
         name = name,
         # Automatically add the i80k libc as dependency.

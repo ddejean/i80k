@@ -1,5 +1,7 @@
 # Copyright (C) 2023-2024 - Damien Dejean <dam.dejean@gmail.com>
 
+load("//kernel/build:rules.bzl", "i80k_library")
+
 # Build configuration for the 8088 board revision 2.
 config_setting(
     name = "8088-rev2",
@@ -27,7 +29,7 @@ config_setting(
     ],
 )
 
-cc_library(
+i80k_library(
     name = "board",
     visibility = ["//kernel:__subpackages__"],
     deps = select({
@@ -43,7 +45,7 @@ cc_library(
     alwayslink = True,
 )
 
-cc_library(
+i80k_library(
     name = "libboard",
     srcs = glob([
         "*.c",
@@ -56,7 +58,6 @@ cc_library(
     visibility = [":__subpackages__"],
     deps = [
         "//kernel/arch",
-        "//libc:c",
     ],
 )
 

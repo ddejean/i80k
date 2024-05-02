@@ -1,6 +1,8 @@
 # Copyright (C) 2024 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_library(
+load("//kernel/build:rules.bzl", "i80k_library")
+
+i80k_library(
     name = "p8254",
     srcs = [
         "p8254.c",
@@ -12,11 +14,10 @@ cc_library(
     deps = [
         "//kernel/arch",
         "//kernel/boards:libboard",
-        "//libc:c",
     ],
 )
 
-cc_library(
+i80k_library(
     name = "p8259a",
     srcs = [
         "p8259a.c",
@@ -28,6 +29,5 @@ cc_library(
     deps = [
         "//kernel/arch",
         "//kernel/boards:libboard",
-        "//libc:c",
     ],
 )

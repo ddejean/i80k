@@ -20,5 +20,6 @@ cc_library(
         "-fno-builtin-free",
     ],
     includes = ["include"],
+    linkstatic = True,
     visibility = ["//visibility:public"],
 )

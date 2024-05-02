@@ -1,6 +1,8 @@
 # Copyright (C) 2023 - Damien Dejean <dam.dejean@gmail.com>
 
-cc_binary(
+load("//kernel/build:rules.bzl", "i80k_binary")
+
+i80k_binary(
     name = "kernel.bin",
     srcs = glob(
         [
@@ -9,16 +11,11 @@ cc_binary(
             "*.c",
         ],
     ),
-    additional_linker_inputs = ["//kernel/boards:lds"],
-    linkopts = [
-        "-T $(location //kernel/boards:lds)",
-    ],
     deps = [
         "//kernel/arch",
         "//kernel/boards:board",
         "//kernel/core",
         "//kernel/drivers",
-        "//libc:c",
         "//third_party/async_xmodem",
     ],
 )
