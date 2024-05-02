@@ -162,8 +162,6 @@ void page_free(struct page *p) {
         buddy = page_buddy(addr, ++order);
     }
     page_push(addr, order);
-
-    free(p);
 }
 
 void page_add(void_fptr_t area, size_t order) {
