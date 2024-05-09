@@ -32,11 +32,11 @@ void kernel(void) {
     kthread_initialize();
 
     printf("Kernel loaded:\n");
-    printf("  .text: %04x[%p:%p], %d bytes\n", KERNEL_CS, _text_start,
+    printf("  .text: %04x[%p:%p], %u bytes\n", KERNEL_CS, _text_start,
            _text_end, _text_end - _text_start);
-    printf("  .data: %04x[%p:%p], %d bytes\n", KERNEL_DS, _data_start,
+    printf("  .data: %04x[%p:%p], %u bytes\n", KERNEL_DS, _data_start,
            _data_end, _data_end - _data_start);
-    printf("  .bss:  %04x[%p:%p], %d bytes\n", KERNEL_DS, _bss_start, _bss_end,
+    printf("  .bss:  %04x[%p:%p], %u bytes\n", KERNEL_DS, _bss_start, _bss_end,
            _bss_end - _bss_start);
 
     // Enable interrupts.
@@ -52,6 +52,7 @@ void kernel(void) {
     driver_probes();
 
     printf("Kernel booted!\n");
+
     while (1) {
         hlt();
     }

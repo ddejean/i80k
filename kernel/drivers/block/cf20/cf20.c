@@ -77,7 +77,6 @@ void cf20_handler(void) {
     // I/O request is finished, unblock the task waiting for it and prepare the
     // next one.
     if (BIO_DONE(io_req->state)) {
-        printf("cf20: wake up pid=%d\n", task->pid);
         list_delete(&task->node);
         scheduler_wake_up(task);
 
@@ -220,9 +219,10 @@ bool cf20_probe(void) {
 
     printf("CF: model: %s, revision: %s, serial number: %s\n", cf_id->model,
            cf_id->firmware, cf_id->serial);
-    printf("CF: %lu sectors of %d bytes, capacity: %luMB\n",
+    printf("CF: %lu sectors of %d bytes, capacity: %luMiB/%luMB\n",
            cf_id->cur_capacity, CF20_SECTOR_SIZE,
-           (cf_id->cur_capacity * CF20_SECTOR_SIZE) / 1000000);
+           (cf_id->cur_capacity * CF20_SECTOR_SIZE) / 1000000,
+           (cf_id->cur_capacity * CF20_SECTOR_SIZE) / 1048576);
 
     // Check for LBA support since this driver only supports LBA mode.
     if (!(cf_id->capabilities & CAP_LBA)) {

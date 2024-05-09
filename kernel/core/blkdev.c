@@ -11,6 +11,7 @@
 
 #include "error.h"
 #include "list.h"
+#include "subdev.h"
 
 // List of registered block devices.
 static struct list_node devices = LIST_INITIAL_VALUE(devices);
@@ -20,9 +21,9 @@ int blk_default_read(const struct blkdev *dev, void *_buf, off_t offset,
 int blk_default_write(const struct blkdev *dev, const void *_buf, off_t offset,
                       size_t len);
 
-void blk_register(struct blkdev *dev) {
+static inline bool blk_dev_add(struct blkdev *dev) {
     if (!dev) {
-        return;
+        return false;
     }
     if (!dev->read) {
         dev->read = blk_default_read;
@@ -31,6 +32,28 @@ void blk_register(struct blkdev *dev) {
         dev->write = blk_default_write;
     }
     list_add_tail(&devices, &dev->node);
+
+    printf("Block device: [%s] %lu %u-byte blocks - %lu bytes\n", dev->name,
+           dev->block_count, dev->block_size,
+           dev->block_count * dev->block_size);
+
+    return true;
+}
+
+void blk_register(struct blkdev *dev) {
+    bool added = blk_dev_add(dev);
+    if (!added) {
+        return;
+    }
+
+    subdev_probe(dev);
+}
+
+void blk_register_subdevice(struct blkdev *dev) {
+    bool added = blk_dev_add(dev);
+    if (!added) {
+        return;
+    }
 }
 
 struct blkdev *blk_unregister(const char *name) {

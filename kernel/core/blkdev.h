@@ -32,14 +32,16 @@ struct blkdev {
                       size_t count);
     int (*write_block)(const struct blkdev *dev, const void *buf, block_t block,
                        size_t count);
-    int (*read)(const struct blkdev *dev, void *buf, off_t offset,
-                size_t len);
+    int (*read)(const struct blkdev *dev, void *buf, off_t offset, size_t len);
     int (*write)(const struct blkdev *dev, const void *buf, off_t offset,
                  size_t len);
 };
 
 // blk_register registers |dev| as a block device.
 void blk_register(struct blkdev *dev);
+
+// blk_register_subdevice registers |dev| as a subdevice.
+void blk_register_subdevice(struct blkdev *dev);
 
 // blk_unregister removes the device |name| from the block device system and
 // returns it.

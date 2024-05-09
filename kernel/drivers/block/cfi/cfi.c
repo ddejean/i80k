@@ -227,11 +227,11 @@ bool cfi_probe(void) {
     bdev->read_block = cfi_read_block;
     bdev->write_block = cfi_write_block;
 
-    blk_register(bdev);
-
     printf("CFI: %s flash, %lu sectors of %u bytes, capacity: %luKB\n",
            cfi_device(vendor_id, chip_id), bdev->block_count, bdev->block_size,
            (bdev->block_count * bdev->block_size) / 1024);
+
+    blk_register(bdev);
 
     return true;
 
