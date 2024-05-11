@@ -105,6 +105,10 @@ int syscall_int80(uint16_t nr, uint16_t arg0, uint16_t arg1, uint16_t arg2,
         case 0x0c:  // brk
             ret = (int)heap_brk((void *)arg0);
             break;
+        case 0xa5:
+            ret = sys_mount((const char *)arg0, (const char *)arg1,
+                            (const char *)arg2);
+            break;
         case 0x3c:
             scheduler_exit((int)arg0);
             break;

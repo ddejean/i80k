@@ -73,3 +73,21 @@ int close(int fd) {
         : "ax", "bx");
     return ret;
 }
+
+int mount(const char *source, const char *target, const char *filesystemtype,
+          unsigned long mountflags, const void *data) {
+    int ret;
+    (void)mountflags;
+    (void)data;
+    __asm__ __volatile__(
+        "mov $0xa5, %%ax\n"
+        "mov %1, %%bx\n"
+        "mov %2, %%cx\n"
+        "mov %3, %%dx\n"
+        "int $0x80\n"
+        "mov %%ax, %0\n"
+        : "=r"(ret)
+        : "g"(source), "g"(target), "g"(filesystemtype)
+        : "ax", "bx", "cx", "dx");
+    return ret;
+}

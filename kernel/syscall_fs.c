@@ -84,3 +84,8 @@ int sys_close(int fd) {
     task_reset_desc(current, fd);
     return 0;
 }
+
+int sys_mount(const char *source, const char *target,
+              const char *filesystemtype) {
+    return fs_mount(target, filesystemtype, source);
+}
