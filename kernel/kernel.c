@@ -8,6 +8,7 @@
 #include "cpu.h"
 #include "driver.h"
 #include "heap.h"
+#include "init.h"
 #include "kthread.h"
 #include "mem.h"
 #include "scheduler.h"
@@ -51,8 +52,11 @@ void kernel(void) {
     // Probe devices and instantiate the drivers.
     driver_probes();
 
+    // Kernel initialization is done, start the init process.
     printf("Kernel booted!\n");
+    init();
 
+    // When init returns, this process hangs.
     while (1) {
         hlt();
     }
