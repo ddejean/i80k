@@ -72,6 +72,8 @@
 
 // Driver private data.
 struct cf20_private {
+    // Interrupt number for this device.
+    int irq;
     // Device sector size.
     size_t sector_sz;
     // Device registers.
@@ -126,6 +128,10 @@ struct cf20_identity {
     uint16_t power_req;
     uint16_t key_mgmt_schemes;
 };
+
+// cf20_set_interrupts enables or disable interrupts based on the value of
+// |enabled|.
+void cf20_set_interrupts(const struct cf20_private *pdev, bool enabled);
 
 // cf20_set_feature sends a feature and its configuration value to the card.
 bool cf20_set_feature(const struct cf20_private *pdev, uint8_t feature,

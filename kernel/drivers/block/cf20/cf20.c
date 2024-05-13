@@ -17,6 +17,9 @@
 #include "list.h"
 #include "scheduler.h"
 
+// Driver private data.
+struct cf20_private *pdev;
+
 // List of all the I/O requests waiting to be satisfied.
 struct list_node requests = LIST_INITIAL_VALUE(requests);
 
@@ -35,7 +38,6 @@ typedef enum {
 #define BIO_DONE(s) ((s) == DONE)
 
 struct bio_request {
-    const struct cf20_private *pdev;
     bio_state_t state;
     block_t block;
     size_t count;
@@ -48,7 +50,7 @@ void cf20_handler(void) {
     struct task *task;
     struct bio_request *io_req;
 
-    irq_ack(5);
+    irq_ack(pdev->irq);
 
     // No requests to handle, this is a spurious interruption.
     if (list_is_empty(&requests)) {
@@ -62,13 +64,13 @@ void cf20_handler(void) {
     // ready.
     if (BIO_RW_SECTOR(io_req->state)) {
         if (io_req->state == READ_SECTOR) {
-            cf20_read_sector(io_req->pdev, io_req->buf);
+            cf20_read_sector(pdev, io_req->buf);
         } else if (io_req->state == WRITE_SECTOR) {
-            cf20_write_sector(io_req->pdev, io_req->buf);
+            cf20_write_sector(pdev, io_req->buf);
         }
         io_req->block++;
         io_req->count--;
-        io_req->buf += io_req->pdev->sector_sz;
+        io_req->buf += pdev->sector_sz;
         if (io_req->count == 0) {
             io_req->state = DONE;
         }
@@ -91,9 +93,9 @@ void cf20_handler(void) {
 
     if (BIO_SEND(io_req->state)) {
         if (io_req->state == READ_CMD) {
-            cf20_send_read_sectors(io_req->pdev, io_req->block, io_req->count);
+            cf20_send_read_sectors(pdev, io_req->block, io_req->count);
         } else if (io_req->state == WRITE_CMD) {
-            cf20_send_write_sectors(io_req->pdev, io_req->block, io_req->count);
+            cf20_send_write_sectors(pdev, io_req->block, io_req->count);
         }
     }
 }
@@ -107,7 +109,6 @@ int cf20_read_block(const struct blkdev *dev, void *buf, block_t block,
     }
 
     struct bio_request *io_req = calloc(1, sizeof(*io_req));
-    io_req->pdev = pdev;
     io_req->block = block;
     io_req->count = count;
     io_req->buf = buf;
@@ -137,7 +138,6 @@ int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
     }
 
     struct bio_request *io_req = calloc(1, sizeof(*io_req));
-    io_req->pdev = pdev;
     io_req->block = block;
     io_req->count = count;
     io_req->buf = (void *)buf;
@@ -161,7 +161,6 @@ int cf20_write_block(const struct blkdev *dev, const void *buf, block_t block,
 bool cf20_probe(void) {
     const struct device *bdev;
     const struct cf20 *cfg;
-    struct cf20_private *pdev = NULL;
     struct cf20_identity *cf_id = NULL;
     struct blkdev *dev = NULL;
 
@@ -185,6 +184,7 @@ bool cf20_probe(void) {
     }
 
     // Fill driver private's data.
+    pdev->irq = cfg->irq;
     pdev->sector_sz = CF20_SECTOR_SIZE;
     pdev->regs.data = REG_DATA(cfg->port);
     pdev->regs.error = REG_ERROR(cfg->port);
@@ -206,6 +206,9 @@ bool cf20_probe(void) {
             goto error;
         }
     }
+
+    // Disable interrupts during the configuration.
+    cf20_set_interrupts(pdev, /* enabled= */ false);
 
     cf_id = calloc(1, sizeof(*cf_id));
     if (!cf_id) {
@@ -231,10 +234,10 @@ bool cf20_probe(void) {
     }
 
     // Enable interrupts.
-    interrupts_handle(interrupts_from_irq(cfg->irq), KERNEL_CS,
+    interrupts_handle(interrupts_from_irq(pdev->irq), KERNEL_CS,
                       cf20_int_handler);
-    irq_enable(cfg->irq);
-    outb(pdev->regs.dev_ctrl, 0);
+    irq_enable(pdev->irq);
+    cf20_set_interrupts(pdev, /* enabled= */ true);
 
     // Create the block device.
     dev = calloc(1, sizeof(*dev));

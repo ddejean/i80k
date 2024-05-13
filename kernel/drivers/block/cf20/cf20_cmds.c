@@ -9,6 +9,14 @@
 #include "cf20_defs.h"
 #include "cpu.h"
 
+void cf20_set_interrupts(const struct cf20_private *pdev, bool enabled) {
+    if (enabled) {
+        outb(pdev->regs.dev_ctrl, 0);
+    } else {
+        outb(pdev->regs.dev_ctrl, DEV_DISABLE_INT);
+    }
+}
+
 bool cf20_set_feature(const struct cf20_private *pdev, uint8_t feature,
                       uint8_t config) {
     outb(pdev->regs.features, feature);
@@ -17,8 +25,7 @@ bool cf20_set_feature(const struct cf20_private *pdev, uint8_t feature,
     outb(pdev->regs.cmd, CMD_SET_FEATURE);
 
     // Wait for the device to be ready.
-    while (inb(pdev->regs.status) & SR_BSY)
-        ;
+    while (inb(pdev->regs.status) & SR_BSY);
 
     uint8_t byte = inb(pdev->regs.status);
     if (byte & SR_ERR) {
@@ -42,8 +49,7 @@ bool cf20_identify(const struct cf20_private *pdev, struct cf20_identity *id) {
     outb(pdev->regs.card_head, CHR_CARD0);
     outb(pdev->regs.cmd, CMD_IDENTIFY);
 
-    while (inb(pdev->regs.status) & SR_BSY)
-        ;
+    while (inb(pdev->regs.status) & SR_BSY);
 
     // Pull the whole sector in a buffer.
     uint8_t *in_buf = (uint8_t *)buf;
